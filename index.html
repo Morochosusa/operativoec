@@ -490,11 +490,12 @@ async function guardar(){
   const btn=document.getElementById('modal-ok');
   btn.disabled=true;btn.textContent='Guardando…';
   try{
-    const col=pendiente.tipo==='baja'?'bajas':'producciones';
+    const tipo=pendiente.tipo;
+    const col=tipo==='baja'?'bajas':'producciones';
     await addDoc(collection(db,col),{...pendiente,fecha:serverTimestamp()});
     cerrarModal();
-    if(pendiente.tipo==='baja')resetBaja();else resetProd();
-    showToast(pendiente.tipo==='baja'?'✅ Baja registrada':'✅ Producción registrada');
+    if(tipo==='baja')resetBaja();else resetProd();
+    showToast(tipo==='baja'?'✅ Baja registrada':'✅ Producción registrada');
   }catch(e){showToast('❌ Error. Revisa conexión.');console.error(e);}
   btn.disabled=false;btn.textContent='Confirmar';
   pendiente=null;
