@@ -129,7 +129,7 @@
           <label>Producto <span class="req">*</span></label>
           <input list="b-producto-list" id="b-producto" class="form-control" placeholder="Escribe para buscar…" autocomplete="off" oninput="onProductoChange('b')"/>
           <datalist id="b-producto-list"></datalist>
-          <div class="field-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
+          <div class="field-hint" id="b-producto-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
         </div>
         <div class="field field-row">
           <div>
@@ -206,7 +206,7 @@
           <label>Producto elaborado <span class="req">*</span></label>
           <input list="p-producto-list" id="p-producto" class="form-control" placeholder="Escribe para buscar…" autocomplete="off" oninput="onProductoChange('p')"/>
           <datalist id="p-producto-list"></datalist>
-          <div class="field-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
+          <div class="field-hint" id="p-producto-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
         </div>
         <div class="field field-row">
           <div>
@@ -427,7 +427,20 @@ function onEncargadoChange(t){
   document.getElementById(t+'-form').style.display='block';
 }
 
-function onProductoChange(t){ /* datalist ya soporta texto libre */ }
+function onProductoChange(t){
+  const val=document.getElementById(t+'-producto').value.trim();
+  const lista=t==='b'?PRODUCTOS_BAJA:PRODUCTOS_PROD;
+  const hint=document.getElementById(t+'-producto-hint');
+  if(!val){
+    hint.textContent='Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.';
+    hint.style.color='var(--gray-4)';
+  } else if(lista.some(p=>p.toLowerCase()===val.toLowerCase())){
+    hint.textContent='';
+  } else {
+    hint.textContent=`✏️ "${val}" no está en la lista — se registrará como producto nuevo.`;
+    hint.style.color='var(--amber)';
+  }
+}
 
 function getProducto(t){ return document.getElementById(t+'-producto').value.trim(); }
 
