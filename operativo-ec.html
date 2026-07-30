@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Morochos Ecuador — Operativo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root {
+    --black:#0A0A0A;--gray-1:#F7F7F7;--gray-2:#EFEFEF;--gray-3:#D8D8D8;
+    --gray-4:#9B9B9B;--gray-5:#555;--red:#D0021B;--red-soft:#FFF0F2;
+    --amber:#F5A623;--amber-soft:#FFFBF0;--green:#1A7A3F;--green-soft:#F0FAF4;
+    --blue:#0066FF;--blue-soft:#F0F5FF;--border:#E8E8E8;
+    --shadow:0 1px 4px rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#F9F9F9;color:var(--black);min-height:100vh;}
+
+  nav{background:white;border-bottom:1px solid var(--border);padding:0 16px;
+    display:flex;align-items:center;justify-content:space-between;height:54px;
+    position:sticky;top:0;z-index:100;}
+  .nav-brand{display:flex;align-items:center;gap:8px;}
+  .nav-brand img{height:32px;width:32px;border-radius:50%;object-fit:cover;}
+  .nav-brand span{font-size:15px;font-weight:700;color:var(--black);}
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{background:transparent;border:1px solid var(--border);color:var(--gray-5);
+    padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;}
+  .nav-tab.active{background:var(--black);border-color:var(--black);color:white;}
+
+  .page{display:none;padding:16px;max-width:640px;margin:0 auto;}
+  .page.active{display:block;}
+
+  .section-head{margin-bottom:16px;}
+  .section-head h2{font-size:20px;font-weight:800;color:var(--black);}
+  .section-head p{font-size:13px;color:var(--gray-4);margin-top:3px;}
+
+  .card{background:white;border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow);margin-bottom:12px;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--gray-5);margin-bottom:5px;}
+  .req{color:var(--red);}
+  .form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    font-size:15px;font-family:inherit;color:var(--black);background:white;outline:none;-webkit-appearance:none;}
+  .form-control:focus{border-color:var(--black);}
+  select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23555' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;}
+  textarea.form-control{resize:vertical;min-height:72px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .field-hint{font-size:11px;color:var(--gray-4);margin-top:4px;}
+
+  /* AREA TAG */
+  .area-tag{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
+    background:var(--gray-1);border:1px solid var(--border);border-radius:10px;
+    font-size:14px;font-weight:700;color:var(--black);margin-bottom:14px;}
+
+  /* CHIPS */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{padding:7px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;
+    font-family:inherit;cursor:pointer;background:white;color:var(--gray-5);font-weight:500;}
+  .chip.selected{background:var(--black);border-color:var(--black);color:white;}
+
+  .btn{padding:13px;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:none;width:100%;}
+  .btn-black{background:var(--black);color:white;}
+  .btn-black:disabled{background:var(--gray-3);cursor:not-allowed;}
+  .btn-outline{background:white;border:1px solid var(--border);color:var(--gray-5);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:var(--black);color:white;padding:12px 20px;border-radius:30px;
+    font-size:13px;font-weight:600;z-index:999;transition:transform .3s;white-space:nowrap;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:white;border-radius:20px 20px 0 0;padding:22px 18px 32px;width:100%;max-width:640px;}
+  .modal-title{font-size:17px;font-weight:800;color:var(--black);margin-bottom:8px;}
+  .modal-body{font-size:14px;color:var(--gray-5);margin-bottom:20px;line-height:1.6;}
+  .modal-footer{display:flex;gap:10px;}
+  .modal-footer .btn{flex:1;}
+
+  @media(max-width:400px){
+    .field-row{grid-template-columns:1fr;}
+    .nav-tab{padding:5px 8px;font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <img src="logo_morochos.png" alt="Morochos">
+    <span>Morochos EC</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-bajas" onclick="showPage('bajas')">Bajas</button>
+    <button class="nav-tab" id="tab-prod" onclick="showPage('prod')">Producción</button>
+    <button class="nav-tab" id="tab-clock" onclick="showPage('clock')">⏰ Turno</button>
+    <button class="nav-tab" id="tab-tips" onclick="showPage('tips')">💵 Tips</button>
+  </div>
+</nav>
+
+<!-- ═══ BAJAS ═══ -->
+<div class="page active" id="page-bajas">
+  <div style="padding-top:10px">
+    <div class="section-head">
+      <h2>Registrar baja</h2>
+      <p>Selecciona el local y quién reporta.</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Local <span class="req">*</span></label>
+        <select id="b-local" class="form-control" onchange="onLocalChange('b')">
+          <option value="">— Seleccionar local —</option>
+          <option>El Salado</option>
+          <option>La Victoria</option>
+          <option>Facility</option>
+        </select>
+      </div>
+      <div class="field" id="b-enc-field" style="display:none">
+        <label>Quién reporta <span class="req">*</span></label>
+        <select id="b-encargado" class="form-control" onchange="onEncargadoChange('b')">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div id="b-area-wrap" style="display:none">
+        <div class="area-tag" id="b-area-tag"></div>
+      </div>
+      <div id="b-form" style="display:none">
+        <div class="field">
+          <label>Producto <span class="req">*</span></label>
+          <input list="b-producto-list" id="b-producto" class="form-control" placeholder="Escribe para buscar…" autocomplete="off" oninput="onProductoChange('b')"/>
+          <datalist id="b-producto-list"></datalist>
+          <div class="field-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
+        </div>
+        <div class="field field-row">
+          <div>
+            <label>Cantidad <span class="req">*</span></label>
+            <input type="number" id="b-cantidad" class="form-control" placeholder="0" min="0" step="0.01"/>
+          </div>
+          <div>
+            <label>Unidad</label>
+            <select id="b-unidad" class="form-control">
+              <option>unidades</option><option>porciones</option><option>litros</option>
+              <option>ml</option><option>kg</option><option>gramos</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Motivo <span class="req">*</span></label>
+          <div class="chips" id="chips-motivo">
+            <button class="chip" data-val="Receta mal preparada" onclick="selChip(this,'motivo')">Receta mal hecha</button>
+            <button class="chip" data-val="Error pedido cliente" onclick="selChip(this,'motivo')">Error cliente</button>
+            <button class="chip" data-val="Error pedido empleado" onclick="selChip(this,'motivo')">Error empleado</button>
+            <button class="chip" data-val="Vencido / caducado" onclick="selChip(this,'motivo')">Vencido</button>
+            <button class="chip" data-val="Derrame / accidente" onclick="selChip(this,'motivo')">Derrame</button>
+            <button class="chip" data-val="Mala calidad" onclick="selChip(this,'motivo')">Mala calidad</button>
+            <button class="chip" data-val="Robo / faltante" onclick="selChip(this,'motivo')">Robo</button>
+            <button class="chip" data-val="Otro" onclick="selChip(this,'motivo')">Otro</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Observación</label>
+          <textarea id="b-obs" class="form-control" placeholder="Detalles adicionales…"></textarea>
+        </div>
+        <button class="btn btn-black" onclick="confirmarBaja()">Registrar baja</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRODUCCIÓN ═══ -->
+<div class="page" id="page-prod">
+  <div style="padding-top:10px">
+    <div class="section-head">
+      <h2>Registrar producción</h2>
+      <p>¿Cuánto se elaboró en este turno?</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Local <span class="req">*</span></label>
+        <select id="p-local" class="form-control" onchange="onLocalChange('p')">
+          <option value="">— Seleccionar local —</option>
+          <option>El Salado</option>
+          <option>La Victoria</option>
+          <option>Facility</option>
+        </select>
+      </div>
+      <div class="field" id="p-enc-field" style="display:none">
+        <label>Responsable <span class="req">*</span></label>
+        <select id="p-encargado" class="form-control" onchange="onEncargadoChange('p')">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div id="p-area-wrap" style="display:none">
+        <div class="area-tag" id="p-area-tag"></div>
+      </div>
+      <div id="p-form" style="display:none">
+        <div class="field">
+          <label>Turno <span class="req">*</span></label>
+          <div class="chips" id="chips-turno">
+            <button class="chip" data-val="Mañana" onclick="selChip(this,'turno')">☀️ Mañana</button>
+            <button class="chip" data-val="Tarde" onclick="selChip(this,'turno')">🌤 Tarde</button>
+            <button class="chip" data-val="Único" onclick="selChip(this,'turno')">⭐ Único</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Producto elaborado <span class="req">*</span></label>
+          <input list="p-producto-list" id="p-producto" class="form-control" placeholder="Escribe para buscar…" autocomplete="off" oninput="onProductoChange('p')"/>
+          <datalist id="p-producto-list"></datalist>
+          <div class="field-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
+        </div>
+        <div class="field field-row">
+          <div>
+            <label>Cantidad <span class="req">*</span></label>
+            <input type="number" id="p-cantidad" class="form-control" placeholder="0" min="1" step="1"/>
+          </div>
+          <div>
+            <label>Unidad</label>
+            <select id="p-unidad" class="form-control">
+              <option>unidades</option><option>porciones</option><option>litros</option><option>kg</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Observación</label>
+          <textarea id="p-obs" class="form-control" placeholder="Novedades del turno…"></textarea>
+        </div>
+        <button class="btn btn-black" onclick="confirmarProd()">Registrar producción</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CLOCK IN/OUT ═══ -->
+<div class="page" id="page-clock">
+  <div style="padding-top:10px">
+    <div class="section-head">
+      <h2>Marcar turno</h2>
+      <p>Ingresa tu código para registrar entrada o salida.</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Local <span class="req">*</span></label>
+        <select id="ck-local" class="form-control" onchange="onClockLocal()">
+          <option value="">— Seleccionar local —</option>
+          <option>El Salado</option>
+          <option>La Victoria</option>
+          <option>Facility</option>
+        </select>
+      </div>
+      <div class="field" id="ck-codigo-field" style="display:none">
+        <label>Código de empleado <span class="req">*</span></label>
+        <input type="number" id="ck-codigo" class="form-control" placeholder="Ej: 1001"
+          oninput="buscarEmpleado()"/>
+      </div>
+      <div id="ck-empleado-info" style="display:none;background:var(--gray-1);border-radius:10px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:16px;font-weight:800;" id="ck-emp-nombre"></div>
+        <div style="font-size:12px;color:var(--gray-4);margin-top:2px;" id="ck-emp-area"></div>
+      </div>
+      <div id="ck-botones" style="display:none;gap:10px;">
+        <button class="btn btn-black" onclick="marcarTurno('entrada')" style="margin-bottom:10px;">
+          ✅ Marcar entrada
+        </button>
+        <button class="btn btn-outline" onclick="marcarTurno('salida')">
+          🚪 Marcar salida
+        </button>
+      </div>
+      <div id="ck-ultimo" style="display:none;font-size:12px;color:var(--gray-4);margin-top:12px;text-align:center;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TIPS ═══ -->
+<div class="page" id="page-tips">
+  <div style="padding-top:10px">
+    <div class="section-head">
+      <h2>Registrar tips</h2>
+      <p>Total recaudado por el turno.</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Local <span class="req">*</span></label>
+        <select id="tp-local" class="form-control" onchange="onTipsLocal()">
+          <option value="">— Seleccionar local —</option>
+          <option>El Salado</option>
+          <option>La Victoria</option>
+          <option>Facility</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Encargado <span class="req">*</span></label>
+        <select id="tp-encargado" class="form-control">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Turno <span class="req">*</span></label>
+        <div class="chips" id="chips-turno-tips">
+          <button class="chip" data-val="Mañana" onclick="selChipTips(this)">☀️ Mañana</button>
+          <button class="chip" data-val="Tarde" onclick="selChipTips(this)">🌤 Tarde</button>
+          <button class="chip" data-val="Único" onclick="selChipTips(this)">⭐ Único</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Total tips recaudados ($) <span class="req">*</span></label>
+        <input type="number" id="tp-total" class="form-control" placeholder="0.00" step="0.01" min="0"/>
+      </div>
+      <div class="field">
+        <label>Observación (opcional)</label>
+        <textarea id="tp-obs" class="form-control" placeholder="Notas del turno…"></textarea>
+      </div>
+      <button class="btn btn-black" onclick="confirmarTips()">Registrar tips</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRM -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirmar</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-black" id="modal-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- PROXY -->
+<script>
+function showPage(id){window._showPage&&window._showPage(id);}
+function onLocalChange(t){window._onLocalChange&&window._onLocalChange(t);}
+function onEncargadoChange(t){window._onEncargadoChange&&window._onEncargadoChange(t);}
+function onProductoChange(t){window._onProductoChange&&window._onProductoChange(t);}
+function selChip(el,g){window._selChip&&window._selChip(el,g);}
+function confirmarBaja(){window._confirmarBaja&&window._confirmarBaja();}
+function confirmarProd(){window._confirmarProd&&window._confirmarProd();}
+function cerrarModal(){window._cerrarModal&&window._cerrarModal();}
+function onClockLocal(){window._onClockLocal&&window._onClockLocal();}
+function buscarEmpleado(){window._buscarEmpleado&&window._buscarEmpleado();}
+function marcarTurno(t){window._marcarTurno&&window._marcarTurno(t);}
+function onTipsLocal(){window._onTipsLocal&&window._onTipsLocal();}
+function selChipTips(el){window._selChipTips&&window._selChipTips(el);}
+function confirmarTips(){window._confirmarTips&&window._confirmarTips();}
+function guardarTips(){window._guardarTips&&window._guardarTips();}
+function guardar(){window._guardar&&window._guardar();}
+</script>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, where, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0IehL6skl91CLhxaCx15J3xOyX_VlkwQ",
+  authDomain: "morochos-ecuador.firebaseapp.com",
+  projectId: "morochos-ecuador",
+  storageBucket: "morochos-ecuador.firebasestorage.app",
+  messagingSenderId: "200807513837",
+  appId: "1:200807513837:web:3d51063e75be94753e56e4"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+let bajas=[], producciones=[];
+let motivoSel='', turnoSel='', turnoTipsSel='', pendiente=null;
+
+// ── ENCARGADOS por local (sin división por área — registran todo) ──
+const ENCARGADOS = {
+  'Erika Tepan':      { local:'La Victoria', turno:'Mañana', icon:'☀️' },
+  'Adriana Montero':  { local:'La Victoria', turno:'Mañana', icon:'☀️' },
+  'Patricia Nieves':  { local:'La Victoria', turno:'Tarde',  icon:'🌤' },
+  'Katy Duchitanga':  { local:'La Victoria', turno:'Tarde',  icon:'🌤' },
+  'Jhoselin Morochos':{ local:'El Salado',   turno:'Único',  icon:'⭐' },
+  'Edison Pacuruco':  { local:'Facility',    turno:'Único',  icon:'⭐' },
+};
+
+// ── Productos combinados (misma base que EE.UU., editable con el tiempo) ──
+const PRODUCTOS_BAJA = [
+  'Empanada carne','Empanada pollo','Empanada verde','Bolón','Empanada de viento','Maduro con queso','Tortilla de tiesto','Tortilla de yuca',
+  'Morocho 10oz','Morocho 16oz','Chocolate 10oz','Chocolate 16oz','Avena piña 10oz','Avena piña 16oz','Avena leche 10oz','Avena leche 16oz',
+  'Café filtrado','Morocho','Chocolate','Avena piña','Avena leche','Avena fría 16oz','Gelatina','Cheesecake','Tiramisú','Tamal','Humitas','Ensalada',
+  'Jugo','Batido','Smoothie','Extracto','Manzana verde','Manzana roja','Pepino','Naranja','Piña picada','Jengibre','Espinaca','Kale','Capuchino','Latte','Moccacino',
+  'Pan chola','Cacho con queso','Jamón y queso','Arepa','Pan de bono','Cachito','Pan de leche','Pan de chocolate','Sandwich jamón y queso','Muffin'
+];
+const PRODUCTOS_PROD = [
+  'Morocho','Avena con piña','Chocolate','Avena con leche','Empanada carne','Empanada pollo','Empanada verde','Bolón','Empanada de viento','Maduro con queso','Tortilla de tiesto','Tortilla de yuca',
+  'Gelatina','Avena fría 16oz','Muesli','Granola con yogurt',
+  'Sandwich jamón y queso','Lechuga','Pastel de piña','Pastel de fresa','Muffin','Arepa'
+];
+
+document.getElementById('b-producto-list').innerHTML = PRODUCTOS_BAJA.map(p=>`<option value="${p}">`).join('');
+document.getElementById('p-producto-list').innerHTML = PRODUCTOS_PROD.map(p=>`<option value="${p}">`).join('');
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={bajas:'tab-bajas',prod:'tab-prod',clock:'tab-clock',tips:'tab-tips'};
+  document.getElementById(map[id])?.classList.add('active');
+}
+
+// ── LOCAL → ENCARGADO (bajas/prod) ──
+function onLocalChange(t){
+  const local=document.getElementById(t+'-local').value;
+  const encSel=document.getElementById(t+'-encargado');
+  const nombres=Object.keys(ENCARGADOS).filter(n=>ENCARGADOS[n].local===local);
+  encSel.innerHTML='<option value="">— Seleccionar —</option>'+nombres.map(n=>`<option>${n}</option>`).join('');
+  document.getElementById(t+'-enc-field').style.display=local?'block':'none';
+  document.getElementById(t+'-area-wrap').style.display='none';
+  document.getElementById(t+'-form').style.display='none';
+  if(t==='b'){motivoSel='';document.querySelectorAll('#chips-motivo .chip').forEach(c=>c.classList.remove('selected'));}
+  else{turnoSel='';document.querySelectorAll('#chips-turno .chip').forEach(c=>c.classList.remove('selected'));}
+}
+
+function onEncargadoChange(t){
+  const enc=document.getElementById(t+'-encargado').value;
+  const info=ENCARGADOS[enc];
+  if(!info){document.getElementById(t+'-area-wrap').style.display='none';document.getElementById(t+'-form').style.display='none';return;}
+  document.getElementById(t+'-area-tag').innerHTML=`${info.icon} <span>${info.turno}</span>`;
+  document.getElementById(t+'-area-wrap').style.display='block';
+  document.getElementById(t+'-producto').value='';
+  document.getElementById(t+'-form').style.display='block';
+}
+
+function onProductoChange(t){ /* datalist ya soporta texto libre */ }
+
+function getProducto(t){ return document.getElementById(t+'-producto').value.trim(); }
+
+function selChip(el,g){
+  document.querySelectorAll(`#chips-${g} .chip`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  if(g==='motivo') motivoSel=el.dataset.val;
+  if(g==='turno') turnoSel=el.dataset.val;
+}
+
+// ── CONFIRMAR BAJA ──
+function confirmarBaja(){
+  const local=document.getElementById('b-local').value;
+  const enc=document.getElementById('b-encargado').value;
+  const prod=getProducto('b');
+  const cant=parseFloat(document.getElementById('b-cantidad').value);
+  const unid=document.getElementById('b-unidad').value;
+  const obs=document.getElementById('b-obs').value.trim();
+  if(!local||!enc||!prod||!cant||!motivoSel){showToast('⚠️ Completa todos los campos');return;}
+  pendiente={tipo:'baja',local,enc,area:'',prod,cant,unid,motivo:motivoSel,obs};
+  document.getElementById('modal-title').textContent='Confirmar baja';
+  document.getElementById('modal-body').innerHTML=
+    `<b>${prod}</b> — ${cant} ${unid}<br>Motivo: ${motivoSel}<br>${local}<br>Reporta: ${enc}`;
+  document.getElementById('modal-ok').setAttribute('onclick','guardar()');
+  document.getElementById('modal').classList.add('open');
+}
+
+// ── CONFIRMAR PRODUCCIÓN ──
+function confirmarProd(){
+  const local=document.getElementById('p-local').value;
+  const enc=document.getElementById('p-encargado').value;
+  const prod=getProducto('p');
+  const cant=parseFloat(document.getElementById('p-cantidad').value);
+  const unid=document.getElementById('p-unidad').value;
+  const obs=document.getElementById('p-obs').value.trim();
+  if(!local||!enc||!prod||!cant||!turnoSel){showToast('⚠️ Completa todos los campos');return;}
+  pendiente={tipo:'prod',local,enc,area:'',prod,cant,unid,turno:turnoSel,obs};
+  document.getElementById('modal-title').textContent='Confirmar producción';
+  document.getElementById('modal-body').innerHTML=
+    `<b>${prod}</b> — ${cant} ${unid}<br>Turno: ${turnoSel}<br>${local}<br>Responsable: ${enc}`;
+  document.getElementById('modal-ok').setAttribute('onclick','guardar()');
+  document.getElementById('modal').classList.add('open');
+}
+
+async function guardar(){
+  if(!pendiente)return;
+  const btn=document.getElementById('modal-ok');
+  btn.disabled=true;btn.textContent='Guardando…';
+  try{
+    const col=pendiente.tipo==='baja'?'bajas':'producciones';
+    await addDoc(collection(db,col),{...pendiente,fecha:serverTimestamp()});
+    cerrarModal();
+    if(pendiente.tipo==='baja')resetBaja();else resetProd();
+    showToast(pendiente.tipo==='baja'?'✅ Baja registrada':'✅ Producción registrada');
+  }catch(e){showToast('❌ Error. Revisa conexión.');console.error(e);}
+  btn.disabled=false;btn.textContent='Confirmar';
+  pendiente=null;
+}
+
+function cerrarModal(){document.getElementById('modal').classList.remove('open');pendiente=null;}
+
+function resetBaja(){
+  ['b-local','b-encargado','b-producto','b-cantidad','b-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('b-unidad').value='unidades';
+  document.getElementById('b-enc-field').style.display='none';
+  document.getElementById('b-area-wrap').style.display='none';
+  document.getElementById('b-form').style.display='none';
+  document.querySelectorAll('#chips-motivo .chip').forEach(c=>c.classList.remove('selected'));
+  motivoSel='';
+}
+
+function resetProd(){
+  ['p-local','p-encargado','p-producto','p-cantidad','p-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-unidad').value='unidades';
+  document.getElementById('p-enc-field').style.display='none';
+  document.getElementById('p-area-wrap').style.display='none';
+  document.getElementById('p-form').style.display='none';
+  document.querySelectorAll('#chips-turno .chip').forEach(c=>c.classList.remove('selected'));
+  turnoSel='';
+}
+
+// ── CLOCK IN/OUT ──
+let empleados = [];
+let clockEmpleado = null;
+
+onSnapshot(query(collection(db,'mg_empleados'),orderBy('nombre')), snap=>{
+  empleados = snap.docs.map(d=>({id:d.id,...d.data()}));
+});
+
+function onClockLocal(){
+  const local = document.getElementById('ck-local').value;
+  document.getElementById('ck-codigo-field').style.display = local ? 'block' : 'none';
+  document.getElementById('ck-empleado-info').style.display = 'none';
+  document.getElementById('ck-botones').style.display = 'none';
+  document.getElementById('ck-ultimo').style.display = 'none';
+  document.getElementById('ck-codigo').value = '';
+  clockEmpleado = null;
+}
+
+function buscarEmpleado(){
+  const codigo = document.getElementById('ck-codigo').value.trim();
+  const local = document.getElementById('ck-local').value;
+  if(codigo.length < 3) {
+    document.getElementById('ck-empleado-info').style.display = 'none';
+    document.getElementById('ck-botones').style.display = 'none';
+    return;
+  }
+  const emp = empleados.find(e => e.codigo === codigo && e.local === local);
+  if(emp){
+    clockEmpleado = emp;
+    document.getElementById('ck-emp-nombre').textContent = emp.nombre;
+    document.getElementById('ck-emp-area').textContent = emp.local;
+    document.getElementById('ck-empleado-info').style.display = 'block';
+    document.getElementById('ck-botones').style.display = 'flex';
+    document.getElementById('ck-botones').style.flexDirection = 'column';
+    checkUltimoRegistro(emp);
+  } else if(codigo.length >= 4){
+    clockEmpleado = null;
+    document.getElementById('ck-empleado-info').style.display = 'none';
+    document.getElementById('ck-botones').style.display = 'none';
+    showToast('⚠️ Código no encontrado en este local');
+  }
+}
+
+async function checkUltimoRegistro(emp){
+  const snap = await getDocs(query(
+    collection(db,'clock_records'),
+    where('empId','==',emp.id),
+    orderBy('fecha','desc')
+  ));
+  if(!snap.empty){
+    const ultimo = snap.docs[0].data();
+    const fecha = ultimo.fecha?.toDate ? ultimo.fecha.toDate() : new Date(ultimo.fecha);
+    const tipo = ultimo.tipo === 'entrada' ? '✅ Entrada' : '🚪 Salida';
+    document.getElementById('ck-ultimo').style.display = 'block';
+    document.getElementById('ck-ultimo').textContent =
+      'Último registro: ' + tipo + ' · ' + fecha.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+  }
+}
+
+async function marcarTurno(tipo){
+  if(!clockEmpleado){ showToast('⚠️ Selecciona un empleado'); return; }
+  try{
+    await addDoc(collection(db,'clock_records'),{
+      empId: clockEmpleado.id,
+      nombre: clockEmpleado.nombre,
+      local: clockEmpleado.local,
+      area: clockEmpleado.area || '',
+      codigo: clockEmpleado.codigo,
+      tipo, fecha: serverTimestamp()
+    });
+    showToast(tipo==='entrada' ? '✅ Entrada registrada' : '🚪 Salida registrada');
+    document.getElementById('ck-local').value = '';
+    document.getElementById('ck-codigo').value = '';
+    document.getElementById('ck-codigo-field').style.display = 'none';
+    document.getElementById('ck-empleado-info').style.display = 'none';
+    document.getElementById('ck-botones').style.display = 'none';
+    document.getElementById('ck-ultimo').style.display = 'none';
+    clockEmpleado = null;
+  } catch(e){ showToast('❌ Error. Revisa conexión.'); console.error(e); }
+}
+
+// ── TIPS ──
+function onTipsLocal(){
+  const local = document.getElementById('tp-local').value;
+  const sel = document.getElementById('tp-encargado');
+  const nombres = Object.keys(ENCARGADOS).filter(n=>ENCARGADOS[n].local===local);
+  sel.innerHTML = '<option value="">— Seleccionar —</option>'+nombres.map(n=>`<option>${n}</option>`).join('');
+}
+
+function selChipTips(el){
+  document.querySelectorAll('#chips-turno-tips .chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  turnoTipsSel = el.dataset.val;
+}
+
+function confirmarTips(){
+  const local = document.getElementById('tp-local').value;
+  const enc = document.getElementById('tp-encargado').value;
+  const total = parseFloat(document.getElementById('tp-total').value);
+  const obs = document.getElementById('tp-obs').value.trim();
+  if(!local||!enc||!turnoTipsSel||!total){ showToast('⚠️ Completa todos los campos'); return; }
+  pendiente = {tipo:'tips', local, enc, turno:turnoTipsSel, total, obs};
+  document.getElementById('modal-title').textContent = 'Confirmar tips';
+  document.getElementById('modal-body').innerHTML =
+    `Total: <b>$${total.toFixed(2)}</b><br>Turno: ${turnoTipsSel}<br>Local: ${local}<br>Encargado: ${enc}`;
+  document.getElementById('modal-ok').setAttribute('onclick','guardarTips()');
+  document.getElementById('modal').classList.add('open');
+}
+
+async function guardarTips(){
+  if(!pendiente) return;
+  const btn = document.getElementById('modal-ok');
+  btn.disabled=true; btn.textContent='Guardando…';
+  try{
+    await addDoc(collection(db,'tips'),{
+      local: pendiente.local, enc: pendiente.enc,
+      turno: pendiente.turno, total: pendiente.total,
+      obs: pendiente.obs, fecha: serverTimestamp()
+    });
+    cerrarModal();
+    ['tp-local','tp-encargado','tp-total','tp-obs'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('#chips-turno-tips .chip').forEach(c=>c.classList.remove('selected'));
+    turnoTipsSel='';
+    showToast('✅ Tips registrados');
+  } catch(e){ showToast('❌ Error. Revisa conexión.'); console.error(e); }
+  btn.disabled=false; btn.textContent='Confirmar';
+  pendiente=null;
+}
+
+// ── EXPONER ──
+window._showPage=showPage;window._onLocalChange=onLocalChange;window._onEncargadoChange=onEncargadoChange;
+window._onProductoChange=onProductoChange;window._selChip=selChip;
+window._confirmarBaja=confirmarBaja;window._confirmarProd=confirmarProd;
+window._cerrarModal=cerrarModal;
+window._onClockLocal=onClockLocal;window._buscarEmpleado=buscarEmpleado;
+window._marcarTurno=marcarTurno;window._onTipsLocal=onTipsLocal;window._selChipTips=selChipTips;
+window._confirmarTips=confirmarTips;window._guardarTips=guardarTips;
+window._guardar=guardar;
+</script>
+</body>
+</html>
