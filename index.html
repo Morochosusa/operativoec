@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Morochos Ecuador — Operativo</title>
+<title>Morochos OS EC</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   :root {
@@ -18,16 +18,17 @@
 
   nav{background:white;border-bottom:1px solid var(--border);padding:0 16px;
     display:flex;align-items:center;justify-content:space-between;height:54px;
-    position:sticky;top:0;z-index:100;}
-  .nav-brand{display:flex;align-items:center;gap:8px;}
+    position:sticky;top:0;z-index:100;gap:8px;}
+  .nav-brand{display:flex;align-items:center;gap:8px;flex-shrink:0;}
   .nav-brand img{height:32px;width:32px;border-radius:50%;object-fit:cover;}
   .nav-brand span{font-size:15px;font-weight:700;color:var(--black);}
-  .nav-tabs{display:flex;gap:4px;}
+  .nav-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
   .nav-tab{background:transparent;border:1px solid var(--border);color:var(--gray-5);
-    padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;}
+    padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;
+    font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .nav-tab.active{background:var(--black);border-color:var(--black);color:white;}
 
-  .page{display:none;padding:16px;max-width:640px;margin:0 auto;}
+  .page{display:none;padding:16px 16px 120px;max-width:640px;margin:0 auto;}
   .page.active{display:block;}
 
   .section-head{margin-bottom:16px;}
@@ -48,12 +49,10 @@
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .field-hint{font-size:11px;color:var(--gray-4);margin-top:4px;}
 
-  /* AREA TAG */
   .area-tag{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
     background:var(--gray-1);border:1px solid var(--border);border-radius:10px;
     font-size:14px;font-weight:700;color:var(--black);margin-bottom:14px;}
 
-  /* CHIPS */
   .chips{display:flex;flex-wrap:wrap;gap:7px;}
   .chip{padding:7px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;
     font-family:inherit;cursor:pointer;background:white;color:var(--gray-5);font-weight:500;}
@@ -64,7 +63,7 @@
   .btn-black:disabled{background:var(--gray-3);cursor:not-allowed;}
   .btn-outline{background:white;border:1px solid var(--border);color:var(--gray-5);}
 
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  .toast{position:fixed;bottom:calc(56px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);
     background:var(--black);color:white;padding:12px 20px;border-radius:30px;
     font-size:13px;font-weight:600;z-index:999;transition:transform .3s;white-space:nowrap;}
   .toast.show{transform:translateX(-50%) translateY(0);}
@@ -77,72 +76,276 @@
   .modal-footer{display:flex;gap:10px;}
   .modal-footer .btn{flex:1;}
 
+  /* ═══ WELCOME / ROL DEL DISPOSITIVO ═══ */
+  #login-screen{position:fixed;inset:0;background:#FFFFFF;z-index:500;}
+  #login-screen.hidden{display:none;}
+  .login-logo{width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:16px;}
+  .login-brand{font-size:13px;font-weight:600;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+  .login-tap{font-size:15px;color:#0A0A0A;font-weight:500;animation:pulse 2.2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.75}}
+
+  /* ═══ BIENVENIDA: local + estación en una sola pantalla ═══ */
+  #ls-welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;overflow-y:auto;}
+  .ls-label{width:100%;max-width:380px;font-size:13px;font-weight:700;color:var(--gray-5);margin:16px 0 8px;}
+  .ls-row{display:flex;gap:8px;width:100%;max-width:380px;}
+  .ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:380px;}
+  .ls-opt{flex:1;padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;background:white;font-family:inherit;font-size:14px;font-weight:600;color:var(--gray-5);cursor:pointer;}
+  .ls-opt.sel{background:var(--black);border-color:var(--black);color:white;}
+  .ls-entrar{max-width:380px;margin-top:24px;}
+
+  /* ═══ TURNO: botón flotante + pantalla del teclado ═══ */
+  .fab-clock{display:none;position:fixed;right:16px;bottom:calc(52px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:none;
+    background:var(--black);color:white;font-size:26px;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;z-index:150;}
+  .fab-clock:active{transform:scale(.94);}
+  .foot-ubicacion{display:none;position:fixed;left:0;right:0;bottom:0;z-index:140;background:var(--black);color:white;
+    font-size:13px;font-weight:600;align-items:center;justify-content:center;gap:10px;
+    min-height:36px;padding:6px 16px calc(6px + env(safe-area-inset-bottom));}
+  .clock-overlay{display:none;position:fixed;inset:0;z-index:300;background:#0A0A0A;overflow-y:auto;}
+  .clock-overlay.open{display:block;}
+  .clock-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:none;
+    background:rgba(255,255,255,.12);color:white;font-size:18px;cursor:pointer;z-index:2;}
+
+  /* ═══ CLOCK KEYPAD ═══ */
+  .ck-local-btn{width:100%;padding:18px;background:rgba(255,255,255,.1);border:none;border-radius:16px;
+    color:white;font-size:18px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:background .15s;}
+  .ck-local-btn:active{background:rgba(255,255,255,.22);}
+  .ck-key{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:white;
+    font-size:26px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;
+    transition:background .12s,transform .08s;display:flex;align-items:center;justify-content:center;width:100%;}
+  .ck-key:active{background:rgba(255,255,255,.28);transform:scale(.93);}
+  .ck-key-del{font-size:22px;}
+  .ck-dot{width:12px;height:12px;border-radius:50%;border:2px solid #555;background:transparent;transition:background .2s,border-color .2s;}
+  .ck-dot.filled{background:white;border-color:white;}
+  .ck-dot.error{background:#D0021B;border-color:#D0021B;}
+
+  /* ═══ CHECKLIST ═══ */
+  .cl-day-header{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .cl-day-label{font-size:13px;font-weight:700;color:var(--gray-5);text-transform:uppercase;letter-spacing:.04em;}
+  .cl-day-pct{font-size:12px;font-weight:600;color:var(--green);}
+  .cl-task{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-2);}
+  .cl-task:last-child{border-bottom:none;}
+  .cl-task-left{flex-shrink:0;padding-top:2px;}
+  .cl-task-body{flex:1;}
+  .cl-task-name{font-size:14px;font-weight:600;color:var(--black);line-height:1.4;}
+  .cl-task-name.reminder{color:var(--gray-4);font-weight:500;font-style:italic;}
+  .cl-task-sub{font-size:12px;color:var(--gray-4);margin-top:2px;}
+  .cl-task-type{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:4px;text-transform:uppercase;letter-spacing:.04em;}
+  .type-reminder{background:var(--gray-2);color:var(--gray-5);}
+  .type-check{background:var(--green-soft);color:var(--green);}
+  .type-photo{background:var(--amber-soft);color:var(--amber);}
+  .cl-checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;background:white;flex-shrink:0;}
+  .cl-checkbox.checked{background:var(--green);border-color:var(--green);}
+  .cl-checkbox.checked::after{content:'✓';color:white;font-size:13px;font-weight:700;}
+  .cl-checkbox.reminder-box{background:var(--gray-2);border-color:var(--gray-3);cursor:default;}
+  .cl-checkbox.reminder-box::after{content:'●';color:var(--gray-4);font-size:10px;}
+  .cl-progress{background:var(--gray-2);border-radius:4px;height:6px;margin-bottom:16px;}
+  .cl-progress-fill{height:6px;border-radius:4px;background:var(--green);transition:width .4s;}
+  .cl-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+  .cl-metric{background:var(--gray-1);border-radius:10px;padding:10px 12px;text-align:center;}
+  .cl-metric-val{font-size:22px;font-weight:800;color:var(--black);}
+  .cl-metric-lab{font-size:11px;color:var(--gray-4);margin-top:2px;}
+  .photo-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:8px;background:white;font-size:12px;color:var(--gray-5);cursor:pointer;}
+  .photo-thumb{width:34px;height:34px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
+  .photo-input{display:none;}
+
+  .pedido-search{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;
+    font-size:15px;font-family:inherit;outline:none;margin-bottom:14px;}
+  .pedido-search:focus{border-color:var(--black);}
+  .pedido-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
+  .pedido-item{background:white;border:1.5px solid var(--border);border-radius:10px;
+    padding:10px 12px;transition:border-color .15s,box-shadow .15s;}
+  .pedido-item.en-pedido{border-color:var(--green);background:var(--green-soft);}
+  .pedido-item-nombre{font-size:13px;font-weight:600;color:var(--black);line-height:1.3;margin-bottom:4px;}
+  .pedido-item-unidad{font-size:11px;color:var(--gray-4);}
+  .pedido-item-cant{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .pedido-item-cant button{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
+    background:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .pedido-item-cant button:active{background:var(--gray-2);}
+  .pedido-item-cant span{font-size:15px;font-weight:700;min-width:24px;text-align:center;color:var(--black);}
+  .pedido-resumen{background:var(--gray-1);border-radius:10px;padding:14px;margin-bottom:14px;}
+  .pedido-resumen-title{font-size:12px;font-weight:700;color:var(--gray-5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+  .pedido-resumen-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;border-bottom:1px solid var(--border);}
+  .pedido-resumen-item:last-child{border-bottom:none;}
+
   @media(max-width:400px){
     .field-row{grid-template-columns:1fr;}
     .nav-tab{padding:5px 8px;font-size:11px;}
+    .pedido-grid{grid-template-columns:1fr;}
   }
+
+  /* ═══ ESTILO FACILITY (Producción) — aplicado a toda la app ═══ */
+  :root{--ac:#3c3489;--acbg:#e9e7fb;--ok:#1d7a4d;--okbg:#e2f3ea;--wn:#a85f00;--wnbg:#fdf0d5;--er:#c0392b;--erbg:#fbe4e1;--mu:#6b6a64;--bd:#d6d3c8;--s1:#fff;--s2:#eceae2;
+    --black:#1f1f1d;--gray-1:#eceae2;--gray-2:#eceae2;--gray-3:#d6d3c8;--gray-4:#6b6a64;--gray-5:#4a4944;
+    --red:#c0392b;--red-soft:#fbe4e1;--amber:#a85f00;--amber-soft:#fdf0d5;--green:#1d7a4d;--green-soft:#e2f3ea;--blue:#3c3489;--blue-soft:#e9e7fb;--border:#d6d3c8;}
+  html{font-size:18px;}
+  body{background:#f4f2ec;color:#1f1f1d;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+  input,textarea,select{-webkit-user-select:text;user-select:text;}
+  nav{height:auto;min-height:64px;padding:8px 14px;background:#fff;}
+  .nav-brand span{font-size:17px;}
+  .nav-tabs{flex:1;}
+  .nav-tab{min-height:48px;padding:8px 16px;font-size:15px;font-weight:600;border:2px solid var(--bd);border-radius:14px;position:relative;}
+  .nav-tab:active{transform:scale(.97);}
+  .nav-tab.active{background:var(--ac);border-color:var(--ac);color:#fff;}
+  .chip-net{font-size:14px;font-weight:700;padding:10px 12px;border-radius:14px;white-space:nowrap;flex-shrink:0;}
+  .chip-net.on{background:var(--okbg);color:var(--ok);} .chip-net.off{background:var(--erbg);color:var(--er);}
+  .chip-snd{min-height:48px;min-width:48px;border:2px solid var(--bd);background:#fff;border-radius:14px;font-size:18px;flex-shrink:0;cursor:pointer;}
+  .page{max-width:900px;padding:14px 14px 150px;}
+  .card{border:2px solid var(--bd);border-radius:16px;box-shadow:none;padding:16px;}
+  .section-head h2{font-size:24px;}
+  .form-control{min-height:56px;font-size:18px;border:2px solid var(--bd);border-radius:14px;padding:12px 14px;}
+  .form-control:focus{border-color:var(--ac);}
+  label{font-size:15px;}
+  .chip{min-height:56px;padding:12px 18px;font-size:16px;font-weight:600;border:2px solid var(--bd);border-radius:14px;}
+  .chip.selected{background:var(--ac);border-color:var(--ac);color:#fff;}
+  .btn{min-height:64px;font-size:18px;font-weight:600;border-radius:14px;border:2px solid transparent;}
+  .btn:active,.bt:active,.qchip:active,.pcard:active,.ls-opt:active{transform:scale(.97);}
+  .btn-black{background:var(--ac);color:#fff;}
+  .btn-black:disabled{background:var(--s2);color:var(--mu);}
+  .btn-outline{border:2px solid var(--bd);}
+  .ls-opt{min-height:72px;font-size:20px;border-radius:16px;border:3px solid var(--bd);}
+  .ls-opt.sel{border-color:var(--ac);background:var(--acbg);color:var(--ac);}
+  .cl-checkbox{width:34px;height:34px;border-radius:10px;border-width:3px;}
+  .cl-task{padding:16px 0;} .cl-task-name{font-size:17px;}
+  .toast{font-size:16px;border-radius:14px;padding:14px 20px;bottom:calc(120px + env(safe-area-inset-bottom));}
+  .modal-box{border-radius:20px 20px 0 0;} .modal-title{font-size:22px;} .modal-body{font-size:17px;}
+  .fab-clock{width:64px;height:64px;font-size:26px;background:var(--ac);bottom:calc(60px + env(safe-area-inset-bottom));}
+  .foot-ubicacion{background:var(--ac);font-size:16px;min-height:48px;}
+
+  /* botones genéricos */
+  .bt{min-height:64px;padding:0 20px;border-radius:14px;border:2px solid var(--bd);background:#fff;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--black);}
+  .bt.ac{background:var(--ac);border-color:var(--ac);color:#fff;} .bt.ok{background:var(--ok);border-color:var(--ok);color:#fff;}
+  .bt.wn{background:var(--wn);border-color:var(--wn);color:#fff;} .bt.er{background:var(--er);border-color:var(--er);color:#fff;}
+  .bt.val{background:var(--acbg);border-color:var(--acbg);color:var(--ac);font-size:20px;}
+  .bt:disabled{opacity:.45;}
+  .tag{display:inline-block;padding:6px 12px;border-radius:12px;font-size:14px;font-weight:700;}
+  .tag.er{background:var(--erbg);color:var(--er);}
+  .tag.wn{background:var(--wnbg);color:var(--wn);} .tag.ac{background:var(--acbg);color:var(--ac);} .tag.ok{background:var(--okbg);color:var(--ok);}
+  .vacio{text-align:center;color:var(--mu);padding:30px 10px;font-size:17px;}
+  .qrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .qchip{min-height:56px;padding:0 20px;border-radius:14px;border:2px solid var(--bd);background:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--black);}
+  .qchip.sel{background:var(--ac);border-color:var(--ac);color:#fff;}
+  .lbl{font-size:14px;font-weight:700;color:var(--mu);margin:4px 0 8px;text-transform:uppercase;letter-spacing:.04em;}
+
+  /* tarjetas de producto */
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
+  .pcard{position:relative;border:3px solid var(--bd);border-radius:16px;min-height:150px;background:#fff;padding:8px;font-family:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;color:var(--black);}
+  .pcard.sel{border-color:var(--ac);background:var(--acbg);}
+  .pcard.dif{border-color:var(--wn);background:var(--wnbg);}
+  .pc-th{height:92px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;overflow:hidden;}
+  .pc-th img{width:100%;height:100%;object-fit:cover;}
+  .pc-n{font-size:18px;font-weight:700;line-height:1.15;} .pc-u{font-size:14px;color:var(--mu);} .pc-u b{color:var(--black);font-size:18px;}
+  .pc-nt{font-size:13px;color:var(--wn);font-weight:600;}
+  .pc-ck{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;z-index:1;}
+  .bar-sticky{position:sticky;bottom:calc(60px + env(safe-area-inset-bottom));background:#f4f2ecee;padding:10px 0;display:flex;gap:12px;align-items:center;z-index:50;}
+  .bar-sticky .cnt{font-size:20px;font-weight:800;flex:0 0 auto;} .bar-sticky .bt{flex:1;}
+  .guia{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;border:3px solid var(--bd);border-radius:16px;background:#fff;padding:16px;font-family:inherit;font-size:18px;text-align:left;margin-bottom:10px;cursor:pointer;color:var(--black);}
+  .guia small{color:var(--mu);font-size:15px;}
+  .badge{background:var(--er);color:#fff;border-radius:12px;font-size:13px;padding:2px 8px;margin-left:6px;display:none;}
+  .mp-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px;font-weight:700;} .mp-h small{color:var(--mu);font-weight:500;}
+  .mp-it{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--s2);font-size:16px;}
+
+  /* modales grandes */
+  .kp-overlay,.qm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;}
+  .kp-overlay{z-index:400;} .qm-overlay{z-index:300;}
+  .kp-overlay.open,.qm-overlay.open{display:flex;}
+  .kp-box,.qm-box{background:#fff;border-radius:20px;padding:20px;width:min(94vw,420px);}
+  .kp-title{font-size:18px;font-weight:700;margin-bottom:6px;text-align:center;}
+  .kp-screen{background:var(--s2);border-radius:14px;padding:12px;text-align:center;margin-bottom:12px;}
+  .kp-val{font-size:56px;font-weight:800;line-height:1.1;} .kp-unit{font-size:15px;color:var(--mu);min-height:20px;}
+  .kp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+  .kp-grid .bt{padding:0;font-size:26px;} .kp-act{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .qm-big{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0;}
+  .qm-big .bt{width:84px;min-height:84px;font-size:38px;padding:0;}
+  .qm-num{font-size:68px;font-weight:800;min-width:110px;text-align:center;line-height:1;}
+  .qm-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
+  .rm-grid{display:grid;gap:10px;margin-top:12px;}
+  .undo-bar{position:fixed;left:50%;transform:translate(-50%,160px);bottom:calc(64px + env(safe-area-inset-bottom));background:#1f1f1d;color:#fff;border-radius:16px;padding:12px 14px 12px 20px;display:flex;align-items:center;gap:16px;z-index:500;font-size:18px;font-weight:600;transition:transform .25s;width:min(94vw,460px);justify-content:space-between;}
+  .undo-bar.show{transform:translate(-50%,0);}
+  .undo-bar button{background:#f5c518;color:#1f1f1d;border:none;border-radius:12px;min-height:52px;padding:0 20px;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;}
+  @media (max-width:520px){.nav-brand span{display:none;}}
+  .cfg-box{background:#f4f2ec;width:min(100vw,760px);margin:0 auto;padding:16px;overflow-y:auto;}
+  .cfg-row{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--bd);border-radius:16px;padding:10px;margin-bottom:10px;}
+  .cfg-th{width:96px;flex-shrink:0;cursor:pointer;text-align:center;} .cfg-th .pc-th{height:76px;} .cfg-cam{font-size:13px;font-weight:700;color:var(--ac);}
+  .cfg-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;} .cfg-name{flex:1;min-width:0;} .cfg-row .bt{min-height:56px;}
+  .rev-it{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:56px;border:none;border-top:1px solid var(--s2);background:none;font-size:18px;font-family:inherit;text-align:left;cursor:pointer;color:var(--black);padding:6px 0;}
+  .rev-it.off{opacity:.4;text-decoration:line-through;}
+  .sec-h{background:var(--ac);color:#fff;font-weight:800;font-size:17px;padding:10px 14px;border-radius:12px;margin:16px 0 6px;}
+  .plist{background:#fff;border:2px solid var(--bd);border-radius:16px;overflow:hidden;}
+  .prow{display:flex;align-items:center;gap:12px;min-height:76px;padding:8px 12px;border-bottom:1px solid var(--bd);cursor:pointer;}
+  .prow:last-child{border-bottom:none;} .prow:active{background:var(--s2);}
+  .prow.sel{background:var(--acbg);box-shadow:inset 6px 0 0 var(--ac);}
+  .pr-th{width:60px;height:60px;border-radius:10px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;}
+  .pr-th img{width:100%;height:100%;object-fit:cover;}
+  .pr-main{flex:1;min-width:0;} .pr-n{font-size:19px;font-weight:700;line-height:1.15;} .pr-d{font-size:16px;color:var(--mu);margin-top:2px;} .pr-d b{color:var(--ac);font-size:19px;}
+  .pr-ck{width:34px;height:34px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+  .pr-add{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:26px;flex-shrink:0;}
+  .pr-ed{width:56px;height:56px;border-radius:14px;border:2px solid var(--bd);background:#fff;font-size:24px;color:var(--ac);cursor:pointer;flex-shrink:0;}
 </style>
 </head>
 <body>
 
+<!-- BIENVENIDA: se elige el local y la estación; se recuerda la última elección de este equipo -->
+<div id="login-screen">
+  <div id="ls-welcome">
+    <img src="logo_morochos.png" alt="Morochos" class="login-logo">
+    <div class="login-brand">Morochos OS EC</div>
+    <div style="font-size:26px;font-weight:800;color:#0A0A0A;text-align:center;">Bienvenidos a Morochos</div>
+    <div class="ls-label">Local</div>
+    <div class="ls-row" id="ls-locales">
+      <button class="ls-opt" data-v="La Victoria" onclick="elegirLocal('La Victoria')">La Victoria</button>
+      <button class="ls-opt" data-v="El Salado" onclick="elegirLocal('El Salado')">El Salado</button>
+      <button class="ls-opt" data-v="Facility" onclick="elegirLocal('Facility')">Facility</button>
+    </div>
+    <div id="ls-est-wrap" style="display:none;width:100%;max-width:380px;">
+    <div class="ls-label" style="max-width:none;">Selecciona tu estación</div>
+    <div class="ls-grid" id="ls-estaciones" style="max-width:none;">
+      <button class="ls-opt" data-v="Panadería producción" onclick="elegirEstacion('Panadería producción')">🥖 Panadería producción</button>
+      <button class="ls-opt" data-v="Panadería" onclick="elegirEstacion('Panadería')">🥐 Panadería</button>
+      <button class="ls-opt" data-v="Cafetería" onclick="elegirEstacion('Cafetería')">☕ Cafetería</button>
+      <button class="ls-opt" data-v="Cocina" onclick="elegirEstacion('Cocina')">🍳 Cocina</button>
+    </div>
+    </div>
+  </div>
+</div>
+
 <nav>
   <div class="nav-brand">
     <img src="logo_morochos.png" alt="Morochos">
-    <span>Morochos EC</span>
+    <span>Morochos OS EC</span>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" id="tab-bajas" onclick="showPage('bajas')">Bajas</button>
-    <button class="nav-tab" id="tab-prod" onclick="showPage('prod')">Producción</button>
-    <button class="nav-tab" id="tab-clock" onclick="showPage('clock')">⏰ Turno</button>
-    <button class="nav-tab" id="tab-tips" onclick="showPage('tips')">💵 Tips</button>
-  </div>
+  <div class="nav-tabs" id="nav-tabs"></div>
+  <span class="chip-net on" id="chip-net">● En línea</span><button class="chip-snd" id="chip-snd" aria-label="Sonido">🔊</button><button class="chip-snd" id="chip-cfg" aria-label="Ajustes de productos" title="Nombres y fotos de productos">⚙</button>
 </nav>
 
 <!-- ═══ BAJAS ═══ -->
-<div class="page active" id="page-bajas">
+<div class="page" id="page-bajas">
   <div style="padding-top:10px">
-    <div class="section-head">
-      <h2>Registrar baja</h2>
-      <p>Selecciona el local y quién reporta.</p>
-    </div>
+    <div class="section-head"><h2>Registrar baja</h2><p>Selecciona el local y quién reporta.</p></div>
     <div class="card">
-      <div class="field">
+      <div class="field" id="b-local-field">
         <label>Local <span class="req">*</span></label>
         <select id="b-local" class="form-control" onchange="onLocalChange('b')">
           <option value="">— Seleccionar local —</option>
-          <option>El Salado</option>
-          <option>La Victoria</option>
-          <option>Facility</option>
+          <option>El Salado</option><option>La Victoria</option><option>Facility</option>
         </select>
       </div>
       <div class="field" id="b-enc-field" style="display:none">
         <label>Quién reporta <span class="req">*</span></label>
-        <select id="b-encargado" class="form-control" onchange="onEncargadoChange('b')">
-          <option value="">— Seleccionar —</option>
-        </select>
+        <select id="b-encargado" class="form-control" onchange="onEncargadoChange('b')"><option value="">— Seleccionar —</option></select>
       </div>
-      <div id="b-area-wrap" style="display:none">
-        <div class="area-tag" id="b-area-tag"></div>
-      </div>
+      <div id="b-area-wrap" style="display:none"><div class="area-tag" id="b-area-tag"></div></div>
       <div id="b-form" style="display:none">
         <div class="field">
           <label>Producto <span class="req">*</span></label>
           <input list="b-producto-list" id="b-producto" class="form-control" placeholder="Escribe para buscar…" autocomplete="off" oninput="onProductoChange('b')"/>
           <datalist id="b-producto-list"></datalist>
-          <div class="field-hint" id="b-producto-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
+          <div class="field-hint" id="b-producto-hint">Escribe las iniciales para filtrar.</div>
         </div>
         <div class="field field-row">
-          <div>
-            <label>Cantidad <span class="req">*</span></label>
-            <input type="number" id="b-cantidad" class="form-control" placeholder="0" min="0" step="0.01"/>
-          </div>
-          <div>
-            <label>Unidad</label>
-            <select id="b-unidad" class="form-control">
-              <option>unidades</option><option>porciones</option><option>litros</option>
-              <option>ml</option><option>kg</option><option>gramos</option>
-            </select>
-          </div>
+          <div><label>Cantidad <span class="req">*</span></label><input type="number" id="b-cantidad" class="form-control" placeholder="0" min="0" step="0.01"/></div>
+          <div><label>Unidad</label><select id="b-unidad" class="form-control"><option>unidades</option><option>porciones</option><option>litros</option><option>ml</option><option>kg</option><option>gramos</option></select></div>
         </div>
         <div class="field">
           <label>Motivo <span class="req">*</span></label>
@@ -157,10 +360,7 @@
             <button class="chip" data-val="Otro" onclick="selChip(this,'motivo')">Otro</button>
           </div>
         </div>
-        <div class="field">
-          <label>Observación</label>
-          <textarea id="b-obs" class="form-control" placeholder="Detalles adicionales…"></textarea>
-        </div>
+        <div class="field"><label>Observación</label><textarea id="b-obs" class="form-control" placeholder="Detalles adicionales…"></textarea></div>
         <button class="btn btn-black" onclick="confirmarBaja()">Registrar baja</button>
       </div>
     </div>
@@ -170,29 +370,20 @@
 <!-- ═══ PRODUCCIÓN ═══ -->
 <div class="page" id="page-prod">
   <div style="padding-top:10px">
-    <div class="section-head">
-      <h2>Registrar producción</h2>
-      <p>¿Cuánto se elaboró en este turno?</p>
-    </div>
+    <div class="section-head"><h2>Registrar producción</h2><p>¿Cuánto se elaboró en este turno?</p></div>
     <div class="card">
-      <div class="field">
+      <div class="field" id="p-local-field">
         <label>Local <span class="req">*</span></label>
         <select id="p-local" class="form-control" onchange="onLocalChange('p')">
           <option value="">— Seleccionar local —</option>
-          <option>El Salado</option>
-          <option>La Victoria</option>
-          <option>Facility</option>
+          <option>El Salado</option><option>La Victoria</option><option>Facility</option>
         </select>
       </div>
       <div class="field" id="p-enc-field" style="display:none">
         <label>Responsable <span class="req">*</span></label>
-        <select id="p-encargado" class="form-control" onchange="onEncargadoChange('p')">
-          <option value="">— Seleccionar —</option>
-        </select>
+        <select id="p-encargado" class="form-control" onchange="onEncargadoChange('p')"><option value="">— Seleccionar —</option></select>
       </div>
-      <div id="p-area-wrap" style="display:none">
-        <div class="area-tag" id="p-area-tag"></div>
-      </div>
+      <div id="p-area-wrap" style="display:none"><div class="area-tag" id="p-area-tag"></div></div>
       <div id="p-form" style="display:none">
         <div class="field">
           <label>Turno <span class="req">*</span></label>
@@ -206,65 +397,58 @@
           <label>Producto elaborado <span class="req">*</span></label>
           <input list="p-producto-list" id="p-producto" class="form-control" placeholder="Escribe para buscar…" autocomplete="off" oninput="onProductoChange('p')"/>
           <datalist id="p-producto-list"></datalist>
-          <div class="field-hint" id="p-producto-hint">Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.</div>
+          <div class="field-hint" id="p-producto-hint">Escribe las iniciales para filtrar.</div>
         </div>
         <div class="field field-row">
-          <div>
-            <label>Cantidad <span class="req">*</span></label>
-            <input type="number" id="p-cantidad" class="form-control" placeholder="0" min="1" step="1"/>
-          </div>
-          <div>
-            <label>Unidad</label>
-            <select id="p-unidad" class="form-control">
-              <option>unidades</option><option>porciones</option><option>litros</option><option>kg</option>
-            </select>
-          </div>
+          <div><label>Cantidad <span class="req">*</span></label><input type="number" id="p-cantidad" class="form-control" placeholder="0" min="1" step="1"/></div>
+          <div><label>Unidad</label><select id="p-unidad" class="form-control"><option>unidades</option><option>porciones</option><option>litros</option><option>kg</option></select></div>
         </div>
-        <div class="field">
-          <label>Observación</label>
-          <textarea id="p-obs" class="form-control" placeholder="Novedades del turno…"></textarea>
-        </div>
+        <div class="field"><label>Observación</label><textarea id="p-obs" class="form-control" placeholder="Novedades del turno…"></textarea></div>
         <button class="btn btn-black" onclick="confirmarProd()">Registrar producción</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ CLOCK IN/OUT ═══ -->
-<div class="page" id="page-clock">
-  <div style="padding-top:10px">
-    <div class="section-head">
-      <h2>Marcar turno</h2>
-      <p>Ingresa tu código para registrar entrada o salida.</p>
+<!-- ═══ TURNO ═══ -->
+<div id="page-clock" class="clock-overlay">
+  <button class="clock-close" onclick="cerrarClock()" aria-label="Cerrar">✕</button>
+  <div style="min-height:100vh;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;">
+    <div id="ck-step-local" style="width:100%;max-width:360px;text-align:center;">
+      <img src="logo_morochos.png" alt="Morochos" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">Morochos OS EC</div>
+      <div style="font-size:26px;font-weight:800;color:white;margin-bottom:32px;">Selecciona tu local</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="ck-local-btn" onclick="ckSelectLocal('El Salado')">El Salado</button>
+        <button class="ck-local-btn" onclick="ckSelectLocal('La Victoria')">La Victoria</button>
+        <button class="ck-local-btn" onclick="ckSelectLocal('Facility')">Facility</button>
+      </div>
     </div>
-    <div class="card">
-      <div class="field">
-        <label>Local <span class="req">*</span></label>
-        <select id="ck-local" class="form-control" onchange="onClockLocal()">
-          <option value="">— Seleccionar local —</option>
-          <option>El Salado</option>
-          <option>La Victoria</option>
-          <option>Facility</option>
-        </select>
+    <div id="ck-step-pin" style="display:none;width:100%;max-width:340px;text-align:center;">
+      <div style="margin-bottom:6px;">
+        <button onclick="ckBack()" style="background:rgba(255,255,255,.1);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;float:left;">←</button>
+        <div style="font-size:13px;font-weight:600;color:#888;letter-spacing:.06em;text-transform:uppercase;padding-top:8px;" id="ck-local-label"></div>
       </div>
-      <div class="field" id="ck-codigo-field" style="display:none">
-        <label>Código de empleado <span class="req">*</span></label>
-        <input type="number" id="ck-codigo" class="form-control" placeholder="Ej: 1001"
-          oninput="buscarEmpleado()"/>
+      <div style="clear:both;margin-bottom:4px;"></div>
+      <div id="ck-emp-found" style="display:none;margin-bottom:20px;background:rgba(255,255,255,.07);border-radius:16px;padding:16px 20px;">
+        <div style="font-size:20px;font-weight:800;color:white;" id="ck-emp-nombre"></div>
+        <div style="font-size:13px;color:#888;margin-top:4px;" id="ck-emp-area"></div>
+        <div style="font-size:12px;color:#666;margin-top:6px;" id="ck-ultimo"></div>
       </div>
-      <div id="ck-empleado-info" style="display:none;background:var(--gray-1);border-radius:10px;padding:14px;margin-bottom:14px;">
-        <div style="font-size:16px;font-weight:800;" id="ck-emp-nombre"></div>
-        <div style="font-size:12px;color:var(--gray-4);margin-top:2px;" id="ck-emp-area"></div>
+      <div style="font-size:22px;font-weight:700;color:white;margin-bottom:16px;" id="ck-pin-title">Ingresa tu código</div>
+      <div id="ck-dots" style="display:flex;justify-content:center;gap:12px;margin-bottom:28px;">
+        <div class="ck-dot"></div><div class="ck-dot"></div><div class="ck-dot"></div><div class="ck-dot"></div>
       </div>
-      <div id="ck-botones" style="display:none;gap:10px;">
-        <button class="btn btn-black" onclick="marcarTurno('entrada')" style="margin-bottom:10px;">
-          ✅ Marcar entrada
-        </button>
-        <button class="btn btn-outline" onclick="marcarTurno('salida')">
-          🚪 Marcar salida
-        </button>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:300px;margin:0 auto 20px;">
+        <button class="ck-key" onclick="ckKey('1')">1</button><button class="ck-key" onclick="ckKey('2')">2</button><button class="ck-key" onclick="ckKey('3')">3</button>
+        <button class="ck-key" onclick="ckKey('4')">4</button><button class="ck-key" onclick="ckKey('5')">5</button><button class="ck-key" onclick="ckKey('6')">6</button>
+        <button class="ck-key" onclick="ckKey('7')">7</button><button class="ck-key" onclick="ckKey('8')">8</button><button class="ck-key" onclick="ckKey('9')">9</button>
+        <div></div><button class="ck-key" onclick="ckKey('0')">0</button><button class="ck-key ck-key-del" onclick="ckDel()">⌫</button>
       </div>
-      <div id="ck-ultimo" style="display:none;font-size:12px;color:var(--gray-4);margin-top:12px;text-align:center;"></div>
+      <div id="ck-action-btns" style="display:none;flex-direction:column;gap:10px;">
+        <button onclick="marcarTurno('entrada')" style="background:white;color:#0A0A0A;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;width:100%;">✅ Marcar entrada</button>
+        <button onclick="marcarTurno('salida')" style="background:rgba(255,255,255,.1);color:white;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;">🚪 Marcar salida</button>
+      </div>
     </div>
   </div>
 </div>
@@ -272,48 +456,114 @@
 <!-- ═══ TIPS ═══ -->
 <div class="page" id="page-tips">
   <div style="padding-top:10px">
-    <div class="section-head">
-      <h2>Registrar tips</h2>
-      <p>Total recaudado por el turno.</p>
-    </div>
+    <div class="section-head"><h2>Registrar tips</h2><p>Total recaudado por el turno.</p></div>
     <div class="card">
-      <div class="field">
-        <label>Local <span class="req">*</span></label>
+      <div class="field" id="tp-local-field"><label>Local <span class="req">*</span></label>
         <select id="tp-local" class="form-control" onchange="onTipsLocal()">
-          <option value="">— Seleccionar local —</option>
-          <option>El Salado</option>
-          <option>La Victoria</option>
-          <option>Facility</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Encargado <span class="req">*</span></label>
-        <select id="tp-encargado" class="form-control">
-          <option value="">— Seleccionar —</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Turno <span class="req">*</span></label>
+          <option value="">— Seleccionar local —</option><option>El Salado</option><option>La Victoria</option><option>Facility</option>
+        </select></div>
+      <div class="field"><label>Encargado <span class="req">*</span></label><select id="tp-encargado" class="form-control"><option value="">— Seleccionar —</option></select></div>
+      <div class="field"><label>Turno <span class="req">*</span></label>
         <div class="chips" id="chips-turno-tips">
           <button class="chip" data-val="Mañana" onclick="selChipTips(this)">☀️ Mañana</button>
           <button class="chip" data-val="Tarde" onclick="selChipTips(this)">🌤 Tarde</button>
           <button class="chip" data-val="Único" onclick="selChipTips(this)">⭐ Único</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Total tips recaudados ($) <span class="req">*</span></label>
-        <input type="number" id="tp-total" class="form-control" placeholder="0.00" step="0.01" min="0"/>
-      </div>
-      <div class="field">
-        <label>Observación (opcional)</label>
-        <textarea id="tp-obs" class="form-control" placeholder="Notas del turno…"></textarea>
-      </div>
+        </div></div>
+      <div class="field"><label>Total tips ($) <span class="req">*</span></label><input type="number" id="tp-total" class="form-control" placeholder="0.00" step="0.01" min="0"/></div>
+      <div class="field"><label>Observación (opcional)</label><textarea id="tp-obs" class="form-control" placeholder="Notas del turno…"></textarea></div>
       <button class="btn btn-black" onclick="confirmarTips()">Registrar tips</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL CONFIRM -->
+<!-- ═══ ACTIVIDADES ═══ -->
+<div class="page" id="page-check">
+  <div style="padding-top:10px">
+    <div class="section-head"><h2>Actividades</h2><p>Completa y registra tus actividades del turno.</p></div>
+    <div class="field" id="cl-resp-wrap"><label>Responsable <span class="req">*</span></label><select id="cl-responsable" class="form-control" onchange="clSetResp()"><option value="">— ¿Quién eres? —</option></select></div>
+    <div id="cl-fecha-wrap" style="margin-bottom:4px;"><div style="font-size:13px;color:var(--gray-4);font-weight:500;" id="cl-fecha-label"></div></div>
+    <div id="cl-metrics-wrap" style="display:none;">
+      <div class="cl-metrics">
+        <div class="cl-metric"><div class="cl-metric-val" id="cl-m-total">0</div><div class="cl-metric-lab">Tareas</div></div>
+        <div class="cl-metric"><div class="cl-metric-val" style="color:var(--green)" id="cl-m-done">0</div><div class="cl-metric-lab">Completadas</div></div>
+        <div class="cl-metric"><div class="cl-metric-val" id="cl-m-pct">0%</div><div class="cl-metric-lab">Avance</div></div>
+      </div>
+      <div class="cl-progress"><div class="cl-progress-fill" id="cl-progress-fill" style="width:0%"></div></div>
+    </div>
+    <div id="cl-tasks-wrap"></div>
+  </div>
+</div>
+
+<!-- ═══ PEDIDO → Facility ═══ -->
+<div class="page" id="page-pedido">
+  <div class="section-head"><h2>Pedido a Facility</h2><p>Toca un producto para pedirlo. Con ✎ cambias la cantidad.</p></div>
+  <input type="search" class="form-control" id="ped-search" placeholder="🔍 Buscar producto…" style="margin-bottom:12px">
+  <div class="qrow" id="ped-cats"></div>
+  <div class="card vacio" id="ped-vacio" style="display:none">No hay productos en esta área todavía.<br></div>
+  <div id="ped-grid"></div>
+  <div class="bar-sticky"><div class="cnt" id="ped-count">0 productos</div><button class="bt ac" id="ped-send" disabled>Enviar a revisión</button></div>
+  <div id="rev-wrap" style="display:none">
+    <div class="lbl" style="margin-top:22px">Por revisar y enviar a Facility (encargado)</div>
+    <div class="qrow" id="rev-quien"></div>
+    <div id="rev-lista"></div>
+  </div>
+  <div class="lbl" style="margin-top:20px">Pedidos enviados</div>
+  <div id="ped-mios"></div>
+</div>
+
+<!-- ═══ POR RECIBIR ═══ -->
+<div class="page" id="page-porrecibir">
+  <div class="section-head"><h2>Por recibir</h2><p>Despachos de Facility que llegaron a este local.</p></div>
+  <div class="lbl">¿Quién recibe?</div>
+  <div class="qrow" id="rec-quien"></div>
+  <div id="rec-listado"><div id="rec-lista"></div></div>
+  <div id="rec-detalle" style="display:none">
+    <button class="bt" id="rec-volver" style="margin-bottom:12px">‹ Volver</button>
+    <p style="color:var(--mu);margin-bottom:10px;font-size:16px">Si todo llegó bien, acepta. Si algo llegó distinto, toca el producto y escribe lo que realmente llegó.</p>
+    <div class="pgrid" id="rec-items"></div>
+    <div class="bar-sticky"><button class="bt ok" id="rec-ok" style="width:100%">✔ Aceptar todo</button></div>
+  </div>
+</div>
+
+<!-- ═══ INVENTARIO ═══ -->
+<div class="page" id="page-inventario">
+  <div class="section-head"><h2>Inventario</h2><p>Toca un producto y escribe cuánto hay. Cuenta el día de hoy y guarda.</p></div>
+  <div class="lbl">¿Quién cuenta?</div>
+  <div class="qrow" id="inv-quien"></div>
+  <input type="search" class="form-control" id="inv-search" placeholder="🔍 Buscar producto…" style="margin-bottom:12px">
+  <div class="qrow" id="inv-cats"></div>
+  <div class="card vacio" id="inv-vacio" style="display:none">No hay productos en esta área todavía.</div>
+  <div class="pgrid" id="inv-grid"></div>
+  <div class="bar-sticky"><div class="cnt" id="inv-count">0 contados</div><button class="bt ac" id="inv-save" disabled>Guardar inventario</button></div>
+</div>
+
+<!-- ═══ EQUIPO ═══ -->
+<div class="page" id="page-equipo">
+  <div style="padding-top:10px">
+    <div class="section-head"><h2>Mi equipo</h2><p>Mis utensilios y equipos entregados.</p></div>
+    <div class="card">
+      <div style="background:var(--amber-soft);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:13px;color:var(--amber);">ℹ️ Registro informativo. Cualquier novedad repórtala al encargado.</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:2px solid var(--border);">
+          <th style="text-align:left;padding:8px 6px;font-size:11px;color:var(--gray-4);font-weight:600;">EQUIPO</th>
+          <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--gray-4);font-weight:600;">CANT.</th>
+          <th style="text-align:left;padding:8px 6px;font-size:11px;color:var(--gray-4);font-weight:600;">ESTADO</th>
+        </tr></thead>
+        <tbody id="equipo-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GUÍA PRODUCTOS ═══ -->
+<div class="page" id="page-guia">
+  <div style="padding-top:10px">
+    <div class="section-head"><h2>Guía de productos</h2><p>Referencia de los productos que elaboras.</p></div>
+    <div id="guia-wrap"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
     <div class="modal-title" id="modal-title">Confirmar</div>
@@ -324,10 +574,42 @@
     </div>
   </div>
 </div>
-
+<div class="qm-overlay" id="qm"><div class="qm-box">
+  <div class="kp-title" id="qm-nombre"></div>
+  <div class="qm-big"><button class="bt" data-a="-1">−</button><div><div class="qm-num" id="qm-val">0</div><div class="kp-unit" id="qm-unit" style="text-align:center"></div></div><button class="bt" data-a="1">+</button></div>
+  <div class="qm-row"><button class="bt val" data-a="1">+1</button><button class="bt val" data-a="5">+5</button><button class="bt val" data-a="10">+10</button></div>
+  <div class="qm-row" style="grid-template-columns:1fr 1fr 1fr"><button class="bt er" data-a="del">Quitar</button><button class="bt" data-a="kp">🔢 Teclado</button><button class="bt ok" data-a="done">Listo</button></div>
+</div></div>
+<div class="kp-overlay" id="kp"><div class="kp-box">
+  <div class="kp-title" id="kp-title">Cantidad</div>
+  <div class="kp-screen"><div class="kp-val" id="kp-val">0</div><div class="kp-unit" id="kp-unit"></div></div>
+  <div class="kp-grid">
+    <button class="bt" data-k="7">7</button><button class="bt" data-k="8">8</button><button class="bt" data-k="9">9</button>
+    <button class="bt" data-k="4">4</button><button class="bt" data-k="5">5</button><button class="bt" data-k="6">6</button>
+    <button class="bt" data-k="1">1</button><button class="bt" data-k="2">2</button><button class="bt" data-k="3">3</button>
+    <button class="bt" data-k=".">,</button><button class="bt" data-k="0">0</button><button class="bt" data-k="back">⌫</button>
+  </div>
+  <div class="kp-act"><button class="bt" data-k="cancel">Cancelar</button><button class="bt ok" data-k="ok">Listo</button></div>
+</div></div>
+<div class="qm-overlay" id="rm" style="z-index:350"><div class="qm-box">
+  <div class="kp-title">¿Qué pasó?</div>
+  <div class="rm-grid">
+    <button class="bt wn" data-m="Faltó">Faltó</button><button class="bt wn" data-m="Llegó dañado">Llegó dañado</button>
+    <button class="bt wn" data-m="No era lo pedido">No era lo pedido</button><button class="bt" data-m="">Sin motivo</button>
+  </div>
+</div></div>
+<div class="qm-overlay" id="cfg" style="z-index:450;align-items:stretch"><div class="cfg-box">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px"><div class="kp-title" style="margin:0;text-align:left;font-size:22px">⚙ Productos (manager)</div><button class="bt" id="cfg-cerrar">Cerrar ✕</button></div>
+  <input type="search" class="form-control" id="cfg-search" placeholder="🔍 Buscar producto…" style="margin-bottom:10px">
+  <div class="qrow" id="cfg-cats"></div>
+  <div id="cfg-lista"></div>
+</div></div>
+<div class="undo-bar" id="undo-bar"><span id="undo-msg"></span><button id="undo-btn">Deshacer</button></div>
+<div class="foot-ubicacion" id="foot-ubicacion"></div>
+<button class="fab-clock" id="fab-clock" onclick="abrirClock()" aria-label="Registrar turno" title="Turno">⏰</button>
 <div class="toast" id="toast"></div>
 
-<!-- PROXY -->
+<!-- PROXY: los onclick del HTML llaman a estas funciones y ellas reenvían al módulo -->
 <script>
 function showPage(id){window._showPage&&window._showPage(id);}
 function onLocalChange(t){window._onLocalChange&&window._onLocalChange(t);}
@@ -337,21 +619,36 @@ function selChip(el,g){window._selChip&&window._selChip(el,g);}
 function confirmarBaja(){window._confirmarBaja&&window._confirmarBaja();}
 function confirmarProd(){window._confirmarProd&&window._confirmarProd();}
 function cerrarModal(){window._cerrarModal&&window._cerrarModal();}
-function onClockLocal(){window._onClockLocal&&window._onClockLocal();}
-function buscarEmpleado(){window._buscarEmpleado&&window._buscarEmpleado();}
 function marcarTurno(t){window._marcarTurno&&window._marcarTurno(t);}
 function onTipsLocal(){window._onTipsLocal&&window._onTipsLocal();}
 function selChipTips(el){window._selChipTips&&window._selChipTips(el);}
 function confirmarTips(){window._confirmarTips&&window._confirmarTips();}
 function guardarTips(){window._guardarTips&&window._guardarTips();}
 function guardar(){window._guardar&&window._guardar();}
+function clToggleTask(id,t){window._clToggleTask&&window._clToggleTask(id,t);}
+function clUploadPhoto(id,inp){window._clUploadPhoto&&window._clUploadPhoto(id,inp);}
+function openPhoto(url){window._openPhoto&&window._openPhoto(url);}
+function entrarDirecto(){window._entrarDirecto&&window._entrarDirecto();}
+function abrirClock(){window._abrirClock&&window._abrirClock();}
+function cerrarClock(){window._cerrarClock&&window._cerrarClock();}
+function elegirLocal(l){window._elegirLocal&&window._elegirLocal(l);}
+function elegirEstacion(e){window._elegirEstacion&&window._elegirEstacion(e);}
+function clSetResp(){window._clSetResp&&window._clSetResp();}
+function ckSelectLocal(l){window._ckSelectLocal&&window._ckSelectLocal(l);}
+function ckBack(){window._ckBack&&window._ckBack();}
+function ckKey(d){window._ckKey&&window._ckKey(d);}
+function ckDel(){window._ckDel&&window._ckDel();}
 </script>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, where, getDocs }
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, where, getDocs, doc, setDoc, getDoc,
+  deleteDoc, runTransaction }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadString, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD0IehL6skl91CLhxaCx15J3xOyX_VlkwQ",
@@ -361,306 +658,970 @@ const firebaseConfig = {
   messagingSenderId: "200807513837",
   appId: "1:200807513837:web:3d51063e75be94753e56e4"
 };
-
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-let bajas=[], producciones=[];
+const app = initializeApp(firebaseConfig);
+let db;
+try{ db = initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})}); }   // guarda datos sin conexión
+catch(e){ db = getFirestore(app); }
+const storage = getStorage(app);
 let motivoSel='', turnoSel='', turnoTipsSel='', pendiente=null;
 
-// ── ENCARGADOS por local (sin división por área — registran todo) ──
+// (La configuración de cada estación está más abajo, en ESTACIONES.)
+
+// ── ENCARGADOS (una sola lista; todos los desplegables salen de aquí) ──
 const ENCARGADOS = {
-  'Erika Tepan':      { local:'La Victoria', turno:'Mañana', icon:'☀️' },
-  'Adriana Montero':  { local:'La Victoria', turno:'Mañana', icon:'☀️' },
-  'Patricia Nieves':  { local:'La Victoria', turno:'Tarde',  icon:'🌤' },
-  'Katy Duchitanga':  { local:'La Victoria', turno:'Tarde',  icon:'🌤' },
-  'Jhoselin Morochos':{ local:'El Salado',   turno:'Único',  icon:'⭐' },
-  'Edison Pacuruco':  { local:'Facility',    turno:'Único',  icon:'⭐' },
+  'Erika Tepan':           { local:'La Victoria', turno:'Mañana', icon:'☀️' },
+  'Adriana Montero':       { local:'La Victoria', turno:'Mañana', icon:'☀️' },
+  'Patricia Nieves':       { local:'La Victoria', turno:'Tarde',  icon:'🌤' },
+  'Katy Duchitanga':       { local:'La Victoria', turno:'Tarde',  icon:'🌤' },
+  'Milton Lozano Morocho': { local:'La Victoria', turno:'Único',  icon:'⭐' },
+  'Jhoselin Morochos':     { local:'El Salado',   turno:'Único',  icon:'⭐' },
+  'Edison Pacuruco':       { local:'Facility',    turno:'Único',  icon:'⭐' },
 };
+function encargadosDeLocal(canon){ return Object.keys(ENCARGADOS).filter(n=>ENCARGADOS[n].local===canon); }
 
-// ── Productos combinados (misma base que EE.UU., editable con el tiempo) ──
-const PRODUCTOS_BAJA = [
-  'Empanada carne','Empanada pollo','Empanada verde','Bolón','Empanada de viento','Maduro con queso','Tortilla de tiesto','Tortilla de yuca',
-  'Morocho 10oz','Morocho 16oz','Chocolate 10oz','Chocolate 16oz','Avena piña 10oz','Avena piña 16oz','Avena leche 10oz','Avena leche 16oz',
-  'Café filtrado','Morocho','Chocolate','Avena piña','Avena leche','Avena fría 16oz','Gelatina','Cheesecake','Tiramisú','Tamal','Humitas','Ensalada',
-  'Jugo','Batido','Smoothie','Extracto','Manzana verde','Manzana roja','Pepino','Naranja','Piña picada','Jengibre','Espinaca','Kale','Capuchino','Latte','Moccacino',
-  'Pan chola','Cacho con queso','Jamón y queso','Arepa','Pan de bono','Cachito','Pan de leche','Pan de chocolate','Sandwich jamón y queso','Muffin'
+// ── ACTIVIDADES PANADERO ──
+const ANTES_DE_EMPEZAR = [
+  { id:'a1', nombre:'Lavarse bien las manos', tipo:'check', sub:'' },
+  { id:'a2', nombre:'Cabello recogido y malla puesta', tipo:'check', sub:'' },
+  { id:'a3', nombre:'Colocarse mandil limpio', tipo:'check', sub:'' },
+  { id:'a4', nombre:'Marcar entrada', tipo:'reminder', sub:'Ve al módulo Turno para marcar tu entrada' },
 ];
-const PRODUCTOS_PROD = [
-  'Morocho','Avena con piña','Chocolate','Avena con leche','Empanada carne','Empanada pollo','Empanada verde','Bolón','Empanada de viento','Maduro con queso','Tortilla de tiesto','Tortilla de yuca',
-  'Gelatina','Avena fría 16oz','Muesli','Granola con yogurt',
-  'Sandwich jamón y queso','Lechuga','Pastel de piña','Pastel de fresa','Muffin','Arepa'
-];
+const ACTIVIDADES_PANADERO = {
+  0:[{id:'d1',nombre:'Producir, etiquetar y registrar pan',tipo:'check',sub:'7:00am – 2:00am'}],
+  1:[
+    {id:'l1',nombre:'Producir, etiquetar y registrar pan',tipo:'check',sub:'7:00am – 2:00am'},
+    {id:'l2',nombre:'Ordenar última producción en cuarto frío',tipo:'check',sub:'Organizar por fecha de elaboración'},
+    {id:'l3',nombre:'Limpiar nevera',tipo:'check',sub:''},
+    {id:'l4',nombre:'Hacer el pedido de tu estación',tipo:'check',sub:''},
+    {id:'l5',nombre:'Limpieza rápida de área de trabajo',tipo:'photo',sub:'Mesas, utensilios, porcionadora, batidora, lavavajillas — sube foto'},
+    {id:'l6',nombre:'Sacar la basura',tipo:'check',sub:''},
+    {id:'l7',nombre:'Lavar las toallas de trabajo',tipo:'photo',sub:'Sube foto de las toallas lavadas'},
+    {id:'l8',nombre:'Cerrar el plástico de los carros de pan',tipo:'check',sub:'Antes de salir del turno'},
+    {id:'l9',nombre:'Marcar salida de trabajo',tipo:'reminder',sub:'Ve al módulo Turno para marcar tu salida'},
+  ],
+  2:[{id:'m1',nombre:'Día libre',tipo:'reminder',sub:'No hay actividades programadas para hoy'}],
+  3:[
+    {id:'x1',nombre:'Producir, etiquetar y registrar pan',tipo:'check',sub:'7:00am – 2:00am'},
+    {id:'x2',nombre:'Descongelar camote y zapallo',tipo:'check',sub:'Antes de empezar la producción de esos panes'},
+    {id:'x3',nombre:'Picar cubos de queso',tipo:'photo',sub:'2:30pm – 3:00pm — sube foto'},
+    {id:'x4',nombre:'Cortar jamón',tipo:'photo',sub:'3:00pm – 3:30pm — sube foto'},
+  ],
+  4:[
+    {id:'j1',nombre:'Producir, etiquetar y registrar pan',tipo:'check',sub:'7:00am – 2:00am'},
+    {id:'j2',nombre:'Recibir y organizar el despacho',tipo:'check',sub:'10:00am – 10:30am'},
+    {id:'j3',nombre:'Limpieza profunda batidora',tipo:'check',sub:''},
+    {id:'j4',nombre:'Limpieza de tachos de harina',tipo:'check',sub:''},
+    {id:'j5',nombre:'Limpiar carritos de pan de bodega',tipo:'check',sub:''},
+  ],
+  5:[
+    {id:'v1',nombre:'Producir, etiquetar y registrar pan',tipo:'check',sub:'7:00am – 2:00am'},
+    {id:'v2',nombre:'Producción de postres',tipo:'photo',sub:'Tiramisú, cheesecake frutos rojos, cheesecake maracuyá — sube foto'},
+    {id:'v3',nombre:'Actualizar el inventario',tipo:'check',sub:''},
+  ],
+  6:[{id:'s1',nombre:'Producir, etiquetar y registrar pan',tipo:'check',sub:'7:00am – 2:00am'}],
+};
+const DIAS_NOMBRE=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function getDiaActual(){return new Date().getDay();}
+function getActividadesHoy(){return (clDef().dias[getDiaActual()])||[];}
+let clEstado={}, clEncargadoActual='', clFechaKey='';
+// Fecha LOCAL (antes usaba UTC y después de las 19:00 en Ecuador saltaba al día siguiente)
+function getHoy(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 
-document.getElementById('b-producto-list').innerHTML = PRODUCTOS_BAJA.map(p=>`<option value="${p}">`).join('');
-document.getElementById('p-producto-list').innerHTML = PRODUCTOS_PROD.map(p=>`<option value="${p}">`).join('');
+// ── PRODUCTOS ──
+const PRODUCTOS_BAJA=['Empanada carne','Empanada pollo','Empanada verde','Bolón','Empanada de viento','Maduro con queso','Tortilla de tiesto','Tortilla de yuca','Morocho 10oz','Morocho 16oz','Chocolate 10oz','Chocolate 16oz','Avena piña 10oz','Avena piña 16oz','Avena leche 10oz','Avena leche 16oz','Café filtrado','Morocho','Chocolate','Avena piña','Avena leche','Avena fría 16oz','Gelatina','Cheesecake','Tiramisú','Tamal','Humitas','Ensalada','Jugo','Batido','Smoothie','Extracto','Manzana verde','Manzana roja','Pepino','Naranja','Piña picada','Jengibre','Espinaca','Kale','Capuchino','Latte','Moccacino','Pan chola','Cacho con queso','Jamón y queso','Arepa','Pan de bono','Cachito','Pan de leche','Pan de chocolate','Sandwich jamón y queso','Muffin'];
+const PRODUCTOS_PROD=['Cachito (15u)','Cacho con queso (12u)','Cake de banana grande','Cake de banana pequeño','Cholas','Empanada blanca (18u)','Enquesillados (16u)','Focaccia','Gusanos de mora (16u)','Jamón con queso (16u)','Palanqueta (16u)','Pan de orégano','Pan de panela','Pan de tiesto','Pan de camote (16u)','Pan de zapallo (16u)','Empanada de verde','Rollos de canela (15u)','Empanada integral (15u)','Tortillas de trigo','Empanada de carne','Empanada de pollo','Tiramisú','Cheesecake frutos rojos','Cheesecake maracuyá'];
+// ══════════════════════════════════
+// ── ESTACIONES ──
+// Aquí se define TODO lo que cambia de una estación a otra: pestañas, productos y checklist.
+// Lo que está aquí es un punto de partida; se ajusta editando solo este bloque.
+// ══════════════════════════════════
+const sinTanda = n => n.replace(/\s*\(\d+u\)/,'');
+const unicos = a => [...new Set(a)];
+const LISTA_PAN_VENTA = unicos([...PRODUCTOS_PROD.map(sinTanda),'Pan chola','Arepa','Pan de bono','Pan de leche','Pan de chocolate','Muffin','Cheesecake']);
+const LISTA_CAFETERIA = ['Morocho 10oz','Morocho 16oz','Chocolate 10oz','Chocolate 16oz','Avena piña 10oz','Avena piña 16oz','Avena leche 10oz','Avena leche 16oz','Café filtrado','Avena fría 16oz','Capuchino','Latte','Moccacino','Jugo','Batido','Smoothie','Extracto','Manzana verde','Manzana roja','Pepino','Naranja','Piña picada','Jengibre','Espinaca','Kale','Gelatina'];
+const LISTA_COCINA = ['Empanada carne','Empanada pollo','Empanada verde','Bolón','Empanada de viento','Maduro con queso','Tortilla de tiesto','Tortilla de yuca','Tamal','Humitas','Ensalada','Sandwich jamón y queso'];
+const TAB_LABEL = {clock:'⏰ Turno',check:'Actividades',prod:'🍞 Producción',bajas:'📉 Bajas',tips:'💵 Tips',pedido:'📦 Pedido',equipo:'🔧 Mi equipo',guia:'📖 Productos',inventario:'📋 Inventario',porrecibir:'📥 Por recibir'};
+const ESTACIONES = {
+  'Panadería producción': {
+    icon:'🥖',
+    tabs:['check','prod','bajas','inventario','pedido','porrecibir','equipo','guia'],
+    bajas:unicos(PRODUCTOS_PROD.map(sinTanda)),   // pérdidas en la producción (masa, tandas)
+    prod:PRODUCTOS_PROD,
+    checklist:{ antes:ANTES_DE_EMPEZAR, dias:ACTIVIDADES_PANADERO, libre:[2] },
+  },
+  'Panadería': {
+    icon:'🥐', tabs:['check','bajas','inventario','pedido','porrecibir','equipo'],
+    bajas:LISTA_PAN_VENTA,                         // pan ya horneado, a la venta
+    prod:[], checklist:null,
+  },
+  'Cafetería': {
+    icon:'☕', tabs:['check','bajas','tips','inventario','pedido','porrecibir','equipo'],
+    bajas:LISTA_CAFETERIA, prod:[], checklist:null,
+  },
+  'Cocina': {
+    icon:'🍳', tabs:['check','prod','bajas','inventario','pedido','porrecibir','equipo'],
+    bajas:LISTA_COCINA, prod:LISTA_COCINA, checklist:null,
+  },
+};
+const LOCALES_DISP = ['La Victoria','El Salado','Facility'];
+const RESP_DEFECTO = {'La Victoria|Panadería producción':'Milton Lozano Morocho'};
+let listaBajas=[], listaProd=[];
+
+// ── DISPOSITIVO: primero se elige el local; al elegirlo aparecen las estaciones; al tocar una se entra ──
+let dispositivo=null, selLocal='';
+function elegirLocal(l){
+  if(!LOCALES_DISP.includes(l))return;
+  selLocal=l;
+  document.querySelectorAll('#ls-locales .ls-opt').forEach(b=>b.classList.toggle('sel',b.dataset.v===l));
+  document.getElementById('ls-est-wrap').style.display='block';
+}
+function elegirEstacion(e){ if(ESTACIONES[e]&&selLocal) entrarDirecto(e); }
+
+// Turno: botón flotante (reloj) que abre el teclado
+function abrirClock(){ ckSelectLocal(dispositivo.local); document.getElementById('page-clock').classList.add('open'); }
+function cerrarClock(){ document.getElementById('page-clock').classList.remove('open'); }
+
+// El local ya lo sabe el equipo: se rellena y se oculta en Bajas, Producción, Tips y Pedido
+function prefillLocal(){
+  if(!dispositivo)return;
+  const L=dispositivo.local;
+  ['b','p'].forEach(t=>{
+    document.getElementById(t+'-local').value=L; onLocalChange(t);
+    document.getElementById(t+'-local-field').style.display='none';
+  });
+  document.getElementById('tp-local').value=L; onTipsLocal();
+  document.getElementById('tp-local-field').style.display='none';
+}
 
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function openPhoto(url){window.open(url,'_blank','noopener');}
 
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  const map={bajas:'tab-bajas',prod:'tab-prod',clock:'tab-clock',tips:'tab-tips'};
-  document.getElementById(map[id])?.classList.add('active');
+  const page=document.getElementById('page-'+id);
+  if(page) page.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.id==='tab-'+id));
+  if(id==='equipo') setTimeout(renderEquipo,50);
+  if(id==='guia')   setTimeout(renderGuia,50);
+  if(id==='pedido') setTimeout(renderPedido,50);
+  if(id==='inventario') invCargar();
+  if(id==='porrecibir') setTimeout(renderRec,50);
 }
 
-// ── LOCAL → ENCARGADO (bajas/prod) ──
+// ── BAJAS / PRODUCCIÓN ──
 function onLocalChange(t){
   const local=document.getElementById(t+'-local').value;
   const encSel=document.getElementById(t+'-encargado');
-  const nombres=Object.keys(ENCARGADOS).filter(n=>ENCARGADOS[n].local===local);
-  encSel.innerHTML='<option value="">— Seleccionar —</option>'+nombres.map(n=>`<option>${n}</option>`).join('');
+  encSel.innerHTML='<option value="">— Seleccionar —</option>'+encargadosDeLocal(local).map(n=>`<option>${n}</option>`).join('');
   document.getElementById(t+'-enc-field').style.display=local?'block':'none';
   document.getElementById(t+'-area-wrap').style.display='none';
   document.getElementById(t+'-form').style.display='none';
   if(t==='b'){motivoSel='';document.querySelectorAll('#chips-motivo .chip').forEach(c=>c.classList.remove('selected'));}
   else{turnoSel='';document.querySelectorAll('#chips-turno .chip').forEach(c=>c.classList.remove('selected'));}
 }
-
 function onEncargadoChange(t){
   const enc=document.getElementById(t+'-encargado').value;
   const info=ENCARGADOS[enc];
   if(!info){document.getElementById(t+'-area-wrap').style.display='none';document.getElementById(t+'-form').style.display='none';return;}
-  document.getElementById(t+'-area-tag').innerHTML=`${info.icon} <span>${info.turno}</span>`;
+  document.getElementById(t+'-area-tag').innerHTML=`${ESTACIONES[dispositivo.estacion].icon} <span>${dispositivo.estacion} · ${info.turno}</span>`;
   document.getElementById(t+'-area-wrap').style.display='block';
   document.getElementById(t+'-producto').value='';
   document.getElementById(t+'-form').style.display='block';
 }
-
 function onProductoChange(t){
   const val=document.getElementById(t+'-producto').value.trim();
-  const lista=t==='b'?PRODUCTOS_BAJA:PRODUCTOS_PROD;
+  const lista=t==='b'?listaBajas:listaProd;
   const hint=document.getElementById(t+'-producto-hint');
-  if(!val){
-    hint.textContent='Escribe las iniciales para filtrar. Si no está en la lista, puedes escribir el nombre igual.';
-    hint.style.color='var(--gray-4)';
-  } else if(lista.some(p=>p.toLowerCase()===val.toLowerCase())){
-    hint.textContent='';
-  } else {
-    hint.textContent=`✏️ "${val}" no está en la lista — se registrará como producto nuevo.`;
-    hint.style.color='var(--amber)';
-  }
+  if(!val){hint.textContent='Escribe las iniciales para filtrar.';hint.style.color='var(--gray-4)';}
+  else if(lista.some(p=>p.toLowerCase()===val.toLowerCase())){hint.textContent='';}
+  else{hint.textContent=`✏️ "${val}" no está en la lista — se registrará como nuevo.`;hint.style.color='var(--amber)';}
 }
-
-function getProducto(t){ return document.getElementById(t+'-producto').value.trim(); }
-
+function getProducto(t){return document.getElementById(t+'-producto').value.trim();}
 function selChip(el,g){
   document.querySelectorAll(`#chips-${g} .chip`).forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
   if(g==='motivo') motivoSel=el.dataset.val;
   if(g==='turno') turnoSel=el.dataset.val;
 }
-
-// ── CONFIRMAR BAJA ──
 function confirmarBaja(){
-  const local=document.getElementById('b-local').value;
-  const enc=document.getElementById('b-encargado').value;
-  const prod=getProducto('b');
-  const cant=parseFloat(document.getElementById('b-cantidad').value);
-  const unid=document.getElementById('b-unidad').value;
-  const obs=document.getElementById('b-obs').value.trim();
+  const local=document.getElementById('b-local').value,enc=document.getElementById('b-encargado').value,prod=getProducto('b'),cant=parseFloat(document.getElementById('b-cantidad').value),unid=document.getElementById('b-unidad').value,obs=document.getElementById('b-obs').value.trim();
   if(!local||!enc||!prod||!cant||!motivoSel){showToast('⚠️ Completa todos los campos');return;}
-  pendiente={tipo:'baja',local,enc,area:'',prod,cant,unid,motivo:motivoSel,obs};
+  pendiente={tipo:'baja',local,enc,estacion:dispositivo.estacion,prod,cant,unid,motivo:motivoSel,obs};
   document.getElementById('modal-title').textContent='Confirmar baja';
-  document.getElementById('modal-body').innerHTML=
-    `<b>${prod}</b> — ${cant} ${unid}<br>Motivo: ${motivoSel}<br>${local}<br>Reporta: ${enc}`;
+  document.getElementById('modal-body').innerHTML=`<b>${prod}</b> — ${cant} ${unid}<br>Motivo: ${motivoSel}<br>${local}<br>Reporta: ${enc}`;
   document.getElementById('modal-ok').setAttribute('onclick','guardar()');
   document.getElementById('modal').classList.add('open');
 }
-
-// ── CONFIRMAR PRODUCCIÓN ──
 function confirmarProd(){
-  const local=document.getElementById('p-local').value;
-  const enc=document.getElementById('p-encargado').value;
-  const prod=getProducto('p');
-  const cant=parseFloat(document.getElementById('p-cantidad').value);
-  const unid=document.getElementById('p-unidad').value;
-  const obs=document.getElementById('p-obs').value.trim();
+  const local=document.getElementById('p-local').value,enc=document.getElementById('p-encargado').value,prod=getProducto('p'),cant=parseFloat(document.getElementById('p-cantidad').value),unid=document.getElementById('p-unidad').value,obs=document.getElementById('p-obs').value.trim();
   if(!local||!enc||!prod||!cant||!turnoSel){showToast('⚠️ Completa todos los campos');return;}
-  pendiente={tipo:'prod',local,enc,area:'',prod,cant,unid,turno:turnoSel,obs};
+  pendiente={tipo:'prod',local,enc,estacion:dispositivo.estacion,prod,cant,unid,turno:turnoSel,obs};
   document.getElementById('modal-title').textContent='Confirmar producción';
-  document.getElementById('modal-body').innerHTML=
-    `<b>${prod}</b> — ${cant} ${unid}<br>Turno: ${turnoSel}<br>${local}<br>Responsable: ${enc}`;
+  document.getElementById('modal-body').innerHTML=`<b>${prod}</b> — ${cant} ${unid}<br>Turno: ${turnoSel}<br>${local}<br>Responsable: ${enc}`;
   document.getElementById('modal-ok').setAttribute('onclick','guardar()');
   document.getElementById('modal').classList.add('open');
 }
-
 async function guardar(){
-  if(!pendiente)return;
+  if(!pendiente) return;
   const btn=document.getElementById('modal-ok');
   btn.disabled=true;btn.textContent='Guardando…';
+  const tipo=pendiente.tipo;   // se lee ANTES de cerrar el modal (cerrarModal borra "pendiente")
   try{
-    const tipo=pendiente.tipo;
-    const col=tipo==='baja'?'bajas':'producciones';
-    await addDoc(collection(db,col),{...pendiente,fecha:serverTimestamp()});
+    await addDoc(collection(db,tipo==='baja'?'bajas':'producciones'),{...pendiente,fecha:serverTimestamp()});
     cerrarModal();
     if(tipo==='baja')resetBaja();else resetProd();
     showToast(tipo==='baja'?'✅ Baja registrada':'✅ Producción registrada');
   }catch(e){showToast('❌ Error. Revisa conexión.');console.error(e);}
-  btn.disabled=false;btn.textContent='Confirmar';
-  pendiente=null;
+  btn.disabled=false;btn.textContent='Confirmar';pendiente=null;
 }
-
 function cerrarModal(){document.getElementById('modal').classList.remove('open');pendiente=null;}
+function resetBaja(){['b-local','b-encargado','b-producto','b-cantidad','b-obs'].forEach(id=>document.getElementById(id).value='');document.getElementById('b-unidad').value='unidades';document.getElementById('b-enc-field').style.display='none';document.getElementById('b-area-wrap').style.display='none';document.getElementById('b-form').style.display='none';document.querySelectorAll('#chips-motivo .chip').forEach(c=>c.classList.remove('selected'));motivoSel='';prefillLocal();}
+function resetProd(){['p-local','p-encargado','p-producto','p-cantidad','p-obs'].forEach(id=>document.getElementById(id).value='');document.getElementById('p-unidad').value='unidades';document.getElementById('p-enc-field').style.display='none';document.getElementById('p-area-wrap').style.display='none';document.getElementById('p-form').style.display='none';document.querySelectorAll('#chips-turno .chip').forEach(c=>c.classList.remove('selected'));turnoSel='';prefillLocal();}
 
-function resetBaja(){
-  ['b-local','b-encargado','b-producto','b-cantidad','b-obs'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('b-unidad').value='unidades';
-  document.getElementById('b-enc-field').style.display='none';
-  document.getElementById('b-area-wrap').style.display='none';
-  document.getElementById('b-form').style.display='none';
-  document.querySelectorAll('#chips-motivo .chip').forEach(c=>c.classList.remove('selected'));
-  motivoSel='';
-}
-
-function resetProd(){
-  ['p-local','p-encargado','p-producto','p-cantidad','p-obs'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('p-unidad').value='unidades';
-  document.getElementById('p-enc-field').style.display='none';
-  document.getElementById('p-area-wrap').style.display='none';
-  document.getElementById('p-form').style.display='none';
-  document.querySelectorAll('#chips-turno .chip').forEach(c=>c.classList.remove('selected'));
-  turnoSel='';
-}
-
-// ── CLOCK IN/OUT ──
-let empleados = [];
-let clockEmpleado = null;
-
-onSnapshot(query(collection(db,'mg_empleados'),orderBy('nombre')), snap=>{
-  empleados = snap.docs.map(d=>({id:d.id,...d.data()}));
-});
-
-function onClockLocal(){
-  const local = document.getElementById('ck-local').value;
-  document.getElementById('ck-codigo-field').style.display = local ? 'block' : 'none';
-  document.getElementById('ck-empleado-info').style.display = 'none';
-  document.getElementById('ck-botones').style.display = 'none';
-  document.getElementById('ck-ultimo').style.display = 'none';
-  document.getElementById('ck-codigo').value = '';
-  clockEmpleado = null;
-}
-
-function buscarEmpleado(){
-  const codigo = document.getElementById('ck-codigo').value.trim();
-  const local = document.getElementById('ck-local').value;
-  if(codigo.length < 3) {
-    document.getElementById('ck-empleado-info').style.display = 'none';
-    document.getElementById('ck-botones').style.display = 'none';
-    return;
-  }
-  const emp = empleados.find(e => e.codigo === codigo && e.local === local);
+// ── TURNO (entrada / salida) ──
+let empleados=[],clockEmpleado=null,ckLocalSel='',ckPin='';
+onSnapshot(query(collection(db,'mg_empleados'),orderBy('nombre')),snap=>{empleados=snap.docs.map(d=>({id:d.id,...d.data()}));});
+function ckSelectLocal(local){ckLocalSel=local;ckPin='';clockEmpleado=null;document.getElementById('ck-local-label').textContent=local;document.getElementById('ck-step-local').style.display='none';document.getElementById('ck-step-pin').style.display='block';document.getElementById('ck-emp-found').style.display='none';document.getElementById('ck-action-btns').style.display='none';document.getElementById('ck-pin-title').textContent='Ingresa tu código';ckUpdateDots();}
+function ckBack(){ckPin='';clockEmpleado=null;ckSelectLocal(dispositivo.local);}
+function ckKey(d){if(ckPin.length>=6)return;ckPin+=d;ckUpdateDots();if(ckPin.length>=3)ckBuscar();}
+function ckDel(){ckPin=ckPin.slice(0,-1);ckUpdateDots();if(ckPin.length<3){clockEmpleado=null;document.getElementById('ck-emp-found').style.display='none';document.getElementById('ck-action-btns').style.display='none';document.getElementById('ck-pin-title').textContent='Ingresa tu código';}}
+function ckUpdateDots(){const c=document.getElementById('ck-dots');c.innerHTML='';for(let i=0;i<Math.max(4,ckPin.length);i++){const d=document.createElement('div');d.className='ck-dot'+(i<ckPin.length?' filled':'');c.appendChild(d);}}
+async function ckBuscar(){
+  const emp=empleados.find(e=>e.codigo===ckPin&&e.local===ckLocalSel);
   if(emp){
-    clockEmpleado = emp;
-    document.getElementById('ck-emp-nombre').textContent = emp.nombre;
-    document.getElementById('ck-emp-area').textContent = emp.local;
-    document.getElementById('ck-empleado-info').style.display = 'block';
-    document.getElementById('ck-botones').style.display = 'flex';
-    document.getElementById('ck-botones').style.flexDirection = 'column';
-    checkUltimoRegistro(emp);
-  } else if(codigo.length >= 4){
-    clockEmpleado = null;
-    document.getElementById('ck-empleado-info').style.display = 'none';
-    document.getElementById('ck-botones').style.display = 'none';
-    showToast('⚠️ Código no encontrado en este local');
+    clockEmpleado=emp;
+    document.getElementById('ck-emp-nombre').textContent=emp.nombre;
+    document.getElementById('ck-emp-area').textContent=emp.local+(emp.area?' · '+emp.area:'');
+    document.getElementById('ck-emp-found').style.display='block';
+    document.getElementById('ck-action-btns').style.display='flex';
+    document.getElementById('ck-pin-title').textContent='¿Qué deseas registrar?';
+    await ckUltimoRegistro(emp);
+  } else if(ckPin.length>=6){
+    document.querySelectorAll('.ck-dot').forEach(d=>{d.classList.remove('filled');d.classList.add('error');});
+    setTimeout(()=>{ckPin='';ckUpdateDots();document.getElementById('ck-pin-title').textContent='Código incorrecto. Intenta de nuevo.';},600);
   }
 }
-
-async function checkUltimoRegistro(emp){
-  const snap = await getDocs(query(
-    collection(db,'clock_records'),
-    where('empId','==',emp.id),
-    orderBy('fecha','desc')
-  ));
-  if(!snap.empty){
-    const ultimo = snap.docs[0].data();
-    const fecha = ultimo.fecha?.toDate ? ultimo.fecha.toDate() : new Date(ultimo.fecha);
-    const tipo = ultimo.tipo === 'entrada' ? '✅ Entrada' : '🚪 Salida';
-    document.getElementById('ck-ultimo').style.display = 'block';
-    document.getElementById('ck-ultimo').textContent =
-      'Último registro: ' + tipo + ' · ' + fecha.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
-  }
-}
-
-async function marcarTurno(tipo){
-  if(!clockEmpleado){ showToast('⚠️ Selecciona un empleado'); return; }
+// Sin orderBy en la consulta (así no hace falta crear un índice en Firebase); se ordena aquí.
+async function ckUltimoRegistro(emp){
   try{
-    await addDoc(collection(db,'clock_records'),{
-      empId: clockEmpleado.id,
-      nombre: clockEmpleado.nombre,
-      local: clockEmpleado.local,
-      area: clockEmpleado.area || '',
-      codigo: clockEmpleado.codigo,
-      tipo, fecha: serverTimestamp()
-    });
-    showToast(tipo==='entrada' ? '✅ Entrada registrada' : '🚪 Salida registrada');
-    document.getElementById('ck-local').value = '';
-    document.getElementById('ck-codigo').value = '';
-    document.getElementById('ck-codigo-field').style.display = 'none';
-    document.getElementById('ck-empleado-info').style.display = 'none';
-    document.getElementById('ck-botones').style.display = 'none';
-    document.getElementById('ck-ultimo').style.display = 'none';
-    clockEmpleado = null;
-  } catch(e){ showToast('❌ Error. Revisa conexión.'); console.error(e); }
+    const snap=await getDocs(query(collection(db,'clock_records'),where('empId','==',emp.id)));
+    const el=document.getElementById('ck-ultimo');
+    if(snap.empty){el.textContent='Sin registros previos';return;}
+    const ms=r=>r.fecha?.toMillis?r.fecha.toMillis():0;
+    const u=snap.docs.map(d=>d.data()).sort((a,b)=>ms(b)-ms(a))[0];
+    const fecha=u.fecha?.toDate?u.fecha.toDate():new Date();
+    const hora=fecha.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+    const dia=fecha.toDateString()===new Date().toDateString()?'':' · '+fecha.toLocaleDateString('es-EC',{day:'numeric',month:'short'});
+    el.textContent=(u.tipo==='entrada'?'✅ Última entrada':'🚪 Última salida')+' · '+hora+dia;
+  }catch(e){console.error(e);}
+}
+async function marcarTurno(tipo){
+  if(!clockEmpleado){showToast('⚠️ Selecciona un empleado');return;}
+  try{
+    await addDoc(collection(db,'clock_records'),{empId:clockEmpleado.id,nombre:clockEmpleado.nombre,local:clockEmpleado.local,area:clockEmpleado.area||'',codigo:clockEmpleado.codigo,tipo,fecha:serverTimestamp()});
+    document.getElementById('ck-pin-title').textContent=tipo==='entrada'?'✅ ¡Buen turno, '+clockEmpleado.nombre.split(' ')[0]+'!':'🚪 ¡Hasta luego, '+clockEmpleado.nombre.split(' ')[0]+'!';
+    document.getElementById('ck-action-btns').style.display='none';
+    setTimeout(()=>{ckPin='';clockEmpleado=null;ckSelectLocal(dispositivo.local);cerrarClock();},2000);
+  }catch(e){showToast('❌ Error. Revisa conexión.');console.error(e);}
 }
 
 // ── TIPS ──
-function onTipsLocal(){
-  const local = document.getElementById('tp-local').value;
-  const sel = document.getElementById('tp-encargado');
-  const nombres = Object.keys(ENCARGADOS).filter(n=>ENCARGADOS[n].local===local);
-  sel.innerHTML = '<option value="">— Seleccionar —</option>'+nombres.map(n=>`<option>${n}</option>`).join('');
-}
-
-function selChipTips(el){
-  document.querySelectorAll('#chips-turno-tips .chip').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  turnoTipsSel = el.dataset.val;
-}
-
-function confirmarTips(){
-  const local = document.getElementById('tp-local').value;
-  const enc = document.getElementById('tp-encargado').value;
-  const total = parseFloat(document.getElementById('tp-total').value);
-  const obs = document.getElementById('tp-obs').value.trim();
-  if(!local||!enc||!turnoTipsSel||!total){ showToast('⚠️ Completa todos los campos'); return; }
-  pendiente = {tipo:'tips', local, enc, turno:turnoTipsSel, total, obs};
-  document.getElementById('modal-title').textContent = 'Confirmar tips';
-  document.getElementById('modal-body').innerHTML =
-    `Total: <b>$${total.toFixed(2)}</b><br>Turno: ${turnoTipsSel}<br>Local: ${local}<br>Encargado: ${enc}`;
-  document.getElementById('modal-ok').setAttribute('onclick','guardarTips()');
-  document.getElementById('modal').classList.add('open');
-}
-
+function onTipsLocal(){const local=document.getElementById('tp-local').value;const sel=document.getElementById('tp-encargado');sel.innerHTML='<option value="">— Seleccionar —</option>'+encargadosDeLocal(local).map(n=>`<option>${n}</option>`).join('');}
+function selChipTips(el){document.querySelectorAll('#chips-turno-tips .chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');turnoTipsSel=el.dataset.val;}
+function confirmarTips(){const local=document.getElementById('tp-local').value,enc=document.getElementById('tp-encargado').value,total=parseFloat(document.getElementById('tp-total').value),obs=document.getElementById('tp-obs').value.trim();if(!local||!enc||!turnoTipsSel||!total){showToast('⚠️ Completa todos los campos');return;}pendiente={tipo:'tips',local,enc,turno:turnoTipsSel,total,obs};document.getElementById('modal-title').textContent='Confirmar tips';document.getElementById('modal-body').innerHTML=`Total: <b>$${total.toFixed(2)}</b><br>Turno: ${turnoTipsSel}<br>Local: ${local}<br>Encargado: ${enc}`;document.getElementById('modal-ok').setAttribute('onclick','guardarTips()');document.getElementById('modal').classList.add('open');}
 async function guardarTips(){
-  if(!pendiente) return;
-  const btn = document.getElementById('modal-ok');
-  btn.disabled=true; btn.textContent='Guardando…';
+  if(!pendiente)return;
+  const btn=document.getElementById('modal-ok');btn.disabled=true;btn.textContent='Guardando…';
   try{
-    await addDoc(collection(db,'tips'),{
-      local: pendiente.local, enc: pendiente.enc,
-      turno: pendiente.turno, total: pendiente.total,
-      obs: pendiente.obs, fecha: serverTimestamp()
-    });
+    await addDoc(collection(db,'tips'),{local:pendiente.local,enc:pendiente.enc,turno:pendiente.turno,total:pendiente.total,obs:pendiente.obs,fecha:serverTimestamp()});
     cerrarModal();
     ['tp-local','tp-encargado','tp-total','tp-obs'].forEach(id=>document.getElementById(id).value='');
     document.querySelectorAll('#chips-turno-tips .chip').forEach(c=>c.classList.remove('selected'));
-    turnoTipsSel='';
-    showToast('✅ Tips registrados');
-  } catch(e){ showToast('❌ Error. Revisa conexión.'); console.error(e); }
-  btn.disabled=false; btn.textContent='Confirmar';
-  pendiente=null;
+    turnoTipsSel='';showToast('✅ Tips registrados');prefillLocal();
+  }catch(e){showToast('❌ Error. Revisa conexión.');console.error(e);}
+  btn.disabled=false;btn.textContent='Confirmar';pendiente=null;
+}
+
+// ── ACTIVIDADES (checklist con fotos, una por estación y por día) ──
+function clDef(){ return ESTACIONES[dispositivo.estacion].checklist; }
+function clDocId(){ return `${dispositivo.local}_${dispositivo.estacion}_${clFechaKey}`; }
+let clResp='';
+function clPrepararResp(){
+  const sel=document.getElementById('cl-responsable');
+  sel.innerHTML='<option value="">— ¿Quién eres? —</option>'+encargadosDeLocal(dispositivo.local).map(n=>`<option>${n}</option>`).join('');
+  clResp=RESP_DEFECTO[dispositivo.local+'|'+dispositivo.estacion]||'';
+  sel.value=clResp;
+}
+function clSetResp(){ clResp=document.getElementById('cl-responsable').value; }
+function clVacio(){
+  ['cl-resp-wrap','cl-fecha-wrap','cl-metrics-wrap'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('cl-tasks-wrap').innerHTML='<div class="card"><div style="text-align:center;padding:24px 10px;color:var(--gray-4);font-size:14px;line-height:1.5;">Aún no hay actividades definidas para esta estación.</div></div>';
+}
+async function clIniciar(){
+  clFechaKey=getHoy();
+  clPrepararResp();
+  document.getElementById('cl-fecha-wrap').style.display='block';
+  try{
+    const snap=await getDoc(doc(db,'checklists',clDocId()));
+    clEstado=snap.exists()?snap.data().tareas||{}:{};
+  }catch(e){clEstado={};console.error(e);}
+  renderChecklist();
+}
+function renderChecklist(){
+  const CL=clDef(), antes=CL.antes||[], tareasHoy=getActividadesHoy();
+  const libre=(CL.libre||[]).includes(getDiaActual());
+  const wrap=document.getElementById('cl-tasks-wrap');wrap.innerHTML='';
+  const conf=[...antes,...tareasHoy].filter(t=>t.tipo!=='reminder');
+  const done=conf.filter(t=>{const e=clEstado[t.id]||{};return t.tipo==='photo'?(e.done&&e.foto_url):e.done;}).length;
+  const pct=conf.length?Math.round(done/conf.length*100):0;
+  document.getElementById('cl-metrics-wrap').style.display='block';
+  document.getElementById('cl-m-total').textContent=conf.length;
+  document.getElementById('cl-m-done').textContent=done;
+  document.getElementById('cl-m-pct').textContent=pct+'%';
+  document.getElementById('cl-progress-fill').style.width=pct+'%';
+  document.getElementById('cl-fecha-label').textContent=DIAS_NOMBRE[getDiaActual()]+' · '+new Date().toLocaleDateString('es-EC',{day:'numeric',month:'long'});
+  if(antes.length) renderSeccion(wrap,'🖐 Antes de empezar',antes);
+  if(libre){const c=document.createElement('div');c.className='card';c.style.marginBottom='12px';c.innerHTML='<div style="text-align:center;padding:24px 10px;"><div style="font-size:32px;margin-bottom:8px;">😴</div><div style="font-size:15px;font-weight:700;">Día libre</div><div style="font-size:13px;color:var(--gray-4);margin-top:4px;">¡Descansa!</div></div>';wrap.appendChild(c);}
+  else renderSeccion(wrap,'📋 Actividades del '+DIAS_NOMBRE[getDiaActual()],tareasHoy);
+}
+function renderSeccion(wrap,titulo,tareas){
+  const card=document.createElement('div');card.className='card';card.style.marginBottom='12px';
+  const conf=tareas.filter(t=>t.tipo!=='reminder');
+  const hechos=conf.filter(t=>{const e=clEstado[t.id]||{};return t.tipo==='photo'?(e.done&&e.foto_url):e.done;}).length;
+  card.innerHTML=`<div class="cl-day-header"><span class="cl-day-label">${titulo}</span>${conf.length?`<span class="cl-day-pct">${hechos}/${conf.length} ✓</span>`:''}</div>`;
+  tareas.forEach(task=>{
+    const estado=clEstado[task.id]||{},isDone=!!estado.done,fotoUrl=estado.foto_url||'',isPhotoOk=task.tipo==='photo'&&isDone&&fotoUrl;
+    const div=document.createElement('div');div.className='cl-task';div.id='task-row-'+task.id;
+    let chk=task.tipo==='reminder'?`<div class="cl-checkbox reminder-box"></div>`:task.tipo==='photo'?`<div class="cl-checkbox ${isPhotoOk?'checked':''}"></div>`:`<div class="cl-checkbox ${isDone?'checked':''}" onclick="clToggleTask('${task.id}','check')"></div>`;
+    const tLabel={reminder:'Recordatorio',check:'Confirmar',photo:'Foto requerida'}[task.tipo];
+    const tClass={reminder:'type-reminder',check:'type-check',photo:'type-photo'}[task.tipo];
+    let photoHTML='';
+    if(task.tipo==='photo'){photoHTML=`<div style="margin-top:8px;"><input type="file" accept="image/*" capture="environment" class="photo-input" id="photo-cl-${task.id}" onchange="clUploadPhoto('${task.id}',this)"/>${fotoUrl?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><img src="${fotoUrl}" class="photo-thumb" onclick="openPhoto('${fotoUrl}')"/><span style="font-size:12px;color:var(--green);font-weight:600;">✓ Foto enviada</span><button onclick="document.getElementById('photo-cl-${task.id}').click()" style="font-size:11px;color:var(--gray-4);background:none;border:none;cursor:pointer;text-decoration:underline;">Cambiar</button></div>`:`<button class="photo-btn" onclick="document.getElementById('photo-cl-${task.id}').click()">📷 Subir foto</button>`}</div>`;}
+    div.innerHTML=`<div class="cl-task-left">${chk}</div><div class="cl-task-body"><div class="cl-task-name ${task.tipo==='reminder'?'reminder':''}">${task.nombre}</div>${task.sub?`<div class="cl-task-sub">${task.sub}</div>`:''}<span class="cl-task-type ${tClass}">${tLabel}</span>${photoHTML}</div>`;
+    card.appendChild(div);
+  });
+  wrap.appendChild(card);
+}
+async function clToggleTask(taskId){
+  if(!clResp){showToast('⚠️ Elige quién eres, arriba');return;}
+  if(clFechaKey!==getHoy()) await clIniciar();   // si el equipo quedó abierto desde ayer
+  const newDone=!(clEstado[taskId]?.done||false);
+  clEstado[taskId]={...clEstado[taskId],done:newDone,por:clResp,horaRegistro:new Date().toISOString()};
+  await clGuardar();renderChecklist();
+}
+async function clUploadPhoto(taskId,input){
+  if(!input.files[0])return;
+  if(!clResp){showToast('⚠️ Elige quién eres, arriba');input.value='';return;}
+  if(clFechaKey!==getHoy()) await clIniciar();
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const sRef=ref(storage,`checklists/${dispositivo.local}/${dispositivo.estacion}/${clFechaKey}/${taskId}.jpg`);
+      await uploadString(sRef,e.target.result,'data_url');
+      const url=await getDownloadURL(sRef);
+      clEstado[taskId]={...clEstado[taskId],done:true,foto_url:url,por:clResp,horaFoto:new Date().toISOString()};
+      await clGuardar();renderChecklist();showToast('✅ Foto guardada');
+    }catch(err){showToast('❌ Error al subir foto');console.error(err);}
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+async function clGuardar(){
+  try{await setDoc(doc(db,'checklists',clDocId()),{local:dispositivo.local,estacion:dispositivo.estacion,encargado:clResp,fecha:clFechaKey,tareas:clEstado,ultimaActualizacion:serverTimestamp()},{merge:true});}
+  catch(e){showToast('❌ Error al guardar');console.error(e);}
+}
+
+// ═══════════════════════════════════════════════
+// UTILIDADES DE INTERFAZ (estilo Facility: sin teclado del sistema, Deshacer, vibración, beep)
+// ═══════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+const r2=n=>Math.round((Number(n)||0)*100)/100;
+const fmtN=n=>{n=r2(n);return Number.isInteger(n)?String(n):String(n).replace('.',',');};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LOCAL_CODE={'La Victoria':'la_victoria','El Salado':'el_salado','Facility':'facility_feria_libre'};
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+let sonidoOn=lsGet('ec_sonido','1')==='1';
+function vib(ms=15){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
+let _ac=null;
+function beep(freq=880,dur=.12){
+  if(!sonidoOn)return;
+  try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();
+    const o=_ac.createOscillator(),g=_ac.createGain();o.frequency.value=freq;g.gain.value=.08;
+    o.connect(g);g.connect(_ac.destination);o.start();o.stop(_ac.currentTime+dur);}catch(e){}
+}
+function toggleSonido(){sonidoOn=!sonidoOn;lsSet('ec_sonido',sonidoOn?'1':'0');$('chip-snd').textContent=sonidoOn?'🔊':'🔇';vib();beep();}
+function actualizarRed(){const on=navigator.onLine;const c=$('chip-net');if(!c)return;c.textContent=on?'● En línea':'● Sin conexión';c.className='chip-net '+(on?'on':'off');}
+window.addEventListener('online',actualizarRed);window.addEventListener('offline',actualizarRed);
+
+// Aviso oscuro con botón "Deshacer" (10 s)
+let _undoT=null,_undoFn=null;
+function showUndo(msg,fn){
+  const u=$('undo-bar');$('undo-msg').textContent=msg;_undoFn=fn;u.classList.add('show');
+  $('undo-btn').style.display=fn?'block':'none';
+  clearTimeout(_undoT);_undoT=setTimeout(()=>{u.classList.remove('show');_undoFn=null;},10000);
+}
+async function undoPress(){
+  const fn=_undoFn;if(!fn)return;_undoFn=null;clearTimeout(_undoT);$('undo-bar').classList.remove('show');vib(30);
+  try{await fn();showToast('↩️ Deshecho');}catch(e){console.error(e);showToast('❌ No se pudo deshacer');}
+}
+
+// Teclado numérico grande (reemplaza el teclado del sistema)
+let _kpCb=null,_kpStr='',_kpFresh=false;
+function openKeypad(titulo,inicial,cb,unidad){
+  _kpCb=cb;_kpStr=(inicial===''||inicial==null||Number(inicial)===0)?'':String(inicial).replace(',','.');
+  $('kp-title').textContent=titulo||'Cantidad';$('kp-unit').textContent=unidad||'';
+  _kpFresh=_kpStr!=='';kpPaint();$('kp').classList.add('open');
+}
+function kpPaint(){$('kp-val').textContent=_kpStr===''?'0':_kpStr.replace('.',',');}
+function kpKey(k){
+  vib(10);
+  if(_kpFresh&&k!=='ok'&&k!=='cancel'){_kpStr='';_kpFresh=false;if(k==='back'){kpPaint();return;}}
+  if(k==='back'){_kpStr=_kpStr.slice(0,-1);}
+  else if(k==='.'){if(!_kpStr.includes('.'))_kpStr=(_kpStr===''?'0':_kpStr)+'.';}
+  else if(k==='cancel'){$('kp').classList.remove('open');_kpCb=null;return;}
+  else if(k==='ok'){
+    const v=r2(parseFloat(_kpStr||'0'));$('kp').classList.remove('open');
+    const cb=_kpCb;_kpCb=null;if(cb)cb(isNaN(v)?0:v);return;
+  }else{
+    const dec=_kpStr.split('.')[1];
+    if(dec!==undefined&&dec.length>=2)return;
+    if(_kpStr.replace('.','').length>=7)return;
+    _kpStr=(_kpStr==='0'?'':_kpStr)+k;
+  }
+  kpPaint();
+}
+// Todo input numérico de la app abre este teclado
+document.addEventListener('focusin',e=>{
+  const t=e.target;
+  if(t&&t.tagName==='INPUT'&&t.type==='number'){
+    t.blur();
+    const lab=t.closest('.field')?.querySelector('label')?.textContent?.replace('*','').trim()||'Cantidad';
+    openKeypad(lab,t.value,v=>{t.value=v?String(v):'';t.dispatchEvent(new Event('input',{bubbles:true}));});
+  }
+});
+document.addEventListener('click',e=>{
+  const kb=e.target.closest('#kp [data-k]');if(kb)kpKey(kb.dataset.k);
+});
+
+// Quién eres (chips grandes, se recuerda en este equipo)
+function quienKey(){return `ec_quien_${dispositivo.local}_${dispositivo.estacion}`;}
+let quien='';
+function renderQuien(cont,onChange){
+  const lista=encargadosDeLocal(dispositivo.local);
+  const def=lsGet(quienKey(),RESP_DEFECTO[dispositivo.local+'|'+dispositivo.estacion]||'');
+  if(!quien&&lista.includes(def))quien=def;
+  $(cont).innerHTML=lista.map(n=>`<button class="qchip ${n===quien?'sel':''}" data-n="${esc(n)}">${esc(n)}</button>`).join('');
+  $(cont).onclick=e=>{const b=e.target.closest('.qchip');if(!b)return;vib();quien=b.dataset.n;lsSet(quienKey(),quien);
+    ['rec-quien','inv-quien','rev-quien'].forEach(c=>renderQuien(c));if(onChange)onChange();};
+}
+
+// ═══════════════════════════════════════════════
+// CATÁLOGO (colección `productos`, se administra desde el Manager > Catálogo)
+// ═══════════════════════════════════════════════
+// ══ CATÁLOGO DE PRODUCTOS (se carga aquí, en Morochos OS) ══
+// Una línea por producto:  nombre; unidad; área; subcategoría; cantidad habitual
+// Áreas: cocina, bakery, panadería producción, limpieza.  Subcategoría: mercado (se compra), bodega o facility (se despacha).
+const CATALOGO_TEXTO=`
+# cocina
+## Mercado
+Tomates cherry (5 × 1 lb)
+Tomate riñón (1 × ½ caja)
+Pimiento verde (1 × 1 arroba)
+Pimiento rojo (1 × ½ arroba)
+Ajo entero (2 × 1 lb)
+Cebolla blanca (1 × ½ arroba)
+Cebolla roja (2 × 1 arroba)
+Ají escabeche rojo (1 × 1 dólar)
+Plátano maduro (2 × 1 dólar)
+Tomate de árbol maduro (1 × ½ caja)
+Lechuga delicia verde (12 uds)
+Col morada repollo grande (3 uds)
+Lechuga delicia morada (12 uds)
+Aguacate duro (12 uds)
+Aguacate maduro (10 uds)
+Zucchini verde (3 uds)
+Carbón grueso (8 fundas)
+## Facility
+Filete pechuga pollo (180 unidades × 120g)
+Filete lomo cerdo (40 unidades × 120g)
+Presas de pollo (150 unidades)
+Chuleta mariposa (30 unidades × 200g)
+Muslo de pollo picado (10 empaques × 180g)
+Frijol cocido (15 × 2 kg)
+Hueso de pollo para fondo (1 empaques × 5kg)
+Papas francesas congeladas (150 × 250g)
+Empanadas de verde (46 uds × 130g)
+Chicharrón cerdo (50 empaques × 45g)
+Base de anís (10 fundas × 250g)
+Queso fresco molido (4 empaques × 2kg)
+Queso fresco bloque (3 empaques × 1 kg)
+Morocho cocido (10 empaques × 450g)
+Frijol cocido (15 fundas × 2 kg)
+Masa de tigrillo (15 empaques × 2 kg)
+Salchicha para papas (20 unidades)
+Jamón laminado (50 unidades)
+Base de piña (5 empaques × 400g)
+## Bodega
+Leche entera (8 cajas × 12 litros)
+Maíz amarillo congelado (1 × 1 kg)
+Huevos medianos (10 cubetas × 30 uds)
+Huevos criollos (5 cubetas × 30 unidades)
+Panela molida (10 fundas × 350g)
+Panela molida (20 fundas × 175g)
+Mix morocho (20 fundas × 12g)
+Cornstarch (11 fundas × 220g)
+Avena molida (10 fundas × 250g)
+Avena molida (8 fundas × 125g)
+Azúcar blanca (10 fundas × 200g)
+Azúcar blanca (20 fundas × 400g)
+Azúcar blanca (15 fundas × 300g)
+Azúcar blanca (12 fundas × 500g)
+Cornstarch (12 fundas × 370g)
+Arroz en grano (15 fundas × 1.6 kg)
+Comino molido (1 fundas × 200g)
+Pimienta negra (1 fundas × 200g)
+Orégano entero (1 × 200g)
+Sal Crisal (1 fundas × 2 kg)
+Sal en grano para parrilla (1)
+Esencia de vainilla (1 botellas × 500cm3)
+Miel de abeja (2 unid)
+## Grande
+Aceite vegetal (30 litros)
+Achiote (2 × 1 litro)
+Aceite de oliva (1)
+Mantequilla sin sal (2 paquetes × 250g)
+Mostaza Maggi (1 galón)
+Vinagre blanco (1 galones)
+Guantes látex negros talla M (1 cajas × 100 unid)
+Limpión industrial (1 rollos × 550m)
+Fundas desglosables transparentes 12x18 (1 rollos)
+Fundas desglosables transparentes 5x10 (2 rollos)
+Papel aluminio (1 rollos × 200m)
+Contenedor 5x5 ensaladas (1 paquetes × 25 unidades)
+Lonchera 8 1/2 x 5 1/2 (2 paquetes × 25 unid)
+Papel para papas (3 paquetes × 50)
+`;
+const slugId=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+let OVR={};   // nombres y fotos cambiados desde ⚙ (guardados en Firestore: productos_ajustes)
+// Formato: "# área", "## sección" y una línea por producto:  Nombre (cantidad habitual × presentación)
+let CAT_BASE=(()=>{
+  let area='cocina',sec='';const out=[];
+  CATALOGO_TEXTO.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    if(l.startsWith('## ')){sec=l.slice(3).trim();return;}
+    if(l.startsWith('# ')){area=l.slice(2).trim();return;}
+    const m=l.match(/^(.*?)\s*\(\s*(\d+(?:[.,]\d+)?)\s*(.*?)\s*\)\s*$/);
+    const nombre=m?m[1]:l,cant=m?parseFloat(m[2].replace(',','.')):1,resto=m?m[3].replace(/\s+/g,' '):'';
+    const sub=/^mercado$/i.test(sec)?'mercado':/^facility$/i.test(sec)?'facility':'bodega';   // "Grande" se despacha desde bodega
+    out.push({id:slugId(area)+'_'+slugId(nombre+' '+resto),nombre,cant,resto,categoria:area,seccion:sec,subcategoria:sub});
+  });
+  return out;
+})();
+const unidadDe=p=>(p.resto||'').replace(/^×\s*/,'')||'uds';
+const descDe=p=>`${fmtN(p.cant)}${p.resto?' '+p.resto:''}`;
+let CAT=[];
+function aplicarOvr(){CAT=CAT_BASE.map(p=>{const o=OVR[p.id]||{};const q={...p,nombre:o.nombre||p.nombre,cant:(o.cant>0?o.cant:p.cant),resto:(o.resto!==undefined?o.resto:p.resto),foto:o.foto||''};q.unidad_medida=unidadDe(q);return q;});}
+aplicarOvr();
+const AREAS=[['cocina','🍳 Cocina'],['bakery','🥐 Bakery'],['panadería producción','🥖 Panadería producción'],['limpieza','🧽 Limpieza']];
+const AREA_DEF={'Cocina':'cocina','Panadería':'bakery','Cafetería':'bakery','Panadería producción':'panadería producción'};
+const sinAc=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const enArea=(p,a)=>sinAc(p.categoria)===sinAc(a);
+function iniciales(n){return String(n).trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function hueDe(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))%360;return h;}
+function thumb(p){
+  if(p.foto)return `<div class="pc-th"><img src="${esc(p.foto)}" alt=""></div>`;
+  const h=hueDe(p.id);
+  return `<div class="pc-th" style="background:hsl(${h} 40% 86%);color:hsl(${h} 40% 28%)">${esc(iniciales(p.nombre))}</div>`;
+}
+function iniciarCatalogo(){   // la lista base está en CATALOGO_TEXTO; aquí llegan los cambios de nombre/foto
+  onSnapshot(collection(db,'productos_ajustes'),snap=>{
+    OVR={};snap.docs.forEach(d=>{OVR[d.id]=d.data();});
+    aplicarOvr();renderPedido();renderInv();renderCfg();
+  },err=>console.error('ajustes',err));
+}
+// ⚙ Ajustes de productos: cambiar nombre y subir foto
+const CODIGO_MANAGER=4821;   // ← cambia aquí el código del manager (solo números, sin cero al inicio)
+let cfgCat='cocina',cfgQ='';
+function renderCfg(){
+  if(!$('cfg')||!$('cfg').classList.contains('open'))return;
+  $('cfg-cats').innerHTML=AREAS.map(([c,l])=>`<button class="qchip ${c===cfgCat?'sel':''}" data-c="${esc(c)}">${l}</button>`).join('');
+  const q=sinAc(cfgQ);
+  const lista=q?CAT.filter(p=>sinAc(p.nombre).includes(q)):CAT.filter(p=>enArea(p,cfgCat));
+  $('cfg-lista').innerHTML=lista.map(p=>`<div class="cfg-row">
+    <label class="cfg-th">${thumb(p)}<span class="cfg-cam">📷 Foto</span><input type="file" accept="image/*" data-foto="${esc(p.id)}" hidden></label>
+    <div class="cfg-name"><input class="form-control" data-nom="${esc(p.id)}" value="${esc(p.nombre)}" placeholder="Nombre">
+      <div class="cfg-2"><div class="field" style="margin:0"><label>Cantidad habitual</label><input type="number" class="form-control" data-cant="${esc(p.id)}" value="${p.cant}"></div>
+      <div class="field" style="margin:0"><label>Presentación (ej. × 1 lb)</label><input class="form-control" data-res="${esc(p.id)}" value="${esc(p.resto||'')}"></div></div></div>
+    <button class="bt ok" data-guardar="${esc(p.id)}">Guardar</button></div>`).join('')||'<div class="vacio">No hay productos en esta área.</div>';
+}
+function reducirFoto(file){return new Promise((res,rej)=>{
+  const fr=new FileReader();fr.onerror=rej;
+  fr.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{
+    const m=600,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.8));};im.src=fr.result;};
+  fr.readAsDataURL(file);});}
+async function cfgSubirFoto(id,file){
+  showToast('⏳ Subiendo foto…');
+  try{const url=await reducirFoto(file);
+    const r=ref(storage,`productos/${id}.jpg`);await uploadString(r,url,'data_url');
+    const link=await getDownloadURL(r);
+    await setDoc(doc(db,'productos_ajustes',id),{foto:link},{merge:true});showToast('✅ Foto guardada');}
+  catch(e){console.error(e);showToast('❌ No se pudo subir la foto');}
+}
+async function cfgGuardarNombre(id){
+  const g=k=>document.querySelector(`[data-${k}="${id}"]`);
+  const nombre=g('nom').value.trim(),cant=parseFloat(g('cant').value),resto=g('res').value.trim();
+  if(!nombre){showToast('⚠️ Escribe un nombre');return;}
+  try{await setDoc(doc(db,'productos_ajustes',id),{nombre,cant:cant>0?cant:null,resto},{merge:true});showToast('✅ Producto guardado');vib();}
+  catch(e){showToast('❌ No se pudo guardar');}
+}
+function iniciarCfg(){
+  $('chip-cfg').addEventListener('click',()=>{
+    openKeypad('Código del manager',0,v=>{
+      if(v!==CODIGO_MANAGER){showToast('❌ Código incorrecto');vib([60,40,60]);return;}
+      $('cfg').classList.add('open');cfgCat=AREA_DEF[dispositivo?.estacion]||'cocina';renderCfg();});
+  });
+  $('cfg-cerrar').addEventListener('click',()=>$('cfg').classList.remove('open'));
+  $('cfg-cats').addEventListener('click',e=>{const b=e.target.closest('.qchip');if(b){cfgCat=b.dataset.c;renderCfg();}});
+  $('cfg-search').addEventListener('input',e=>{cfgQ=e.target.value;renderCfg();});
+  $('cfg-lista').addEventListener('change',e=>{const f=e.target.closest('[data-foto]');if(f&&f.files[0])cfgSubirFoto(f.dataset.foto,f.files[0]);});
+  $('cfg-lista').addEventListener('click',e=>{const b=e.target.closest('[data-guardar]');if(b)cfgGuardarNombre(b.dataset.guardar);});
+}
+
+// ═══════════════════════════════════════════════
+// PEDIDO → Facility (colección `pedidos_locales`)
+// ═══════════════════════════════════════════════
+let pedItems={},pedCat='cocina',pedQ='',pedMios=[];
+const draftKey=()=>`ec_pedido_borrador_${dispositivo.local}_${dispositivo.estacion}`;
+function cargarBorrador(){try{pedItems=JSON.parse(lsGet(draftKey(),'{}'))||{};}catch(e){pedItems={};}}
+function guardarBorrador(){lsSet(draftKey(),JSON.stringify(pedItems));}
+const SEC_ORDEN=['Mercado','Facility','Bodega','Grande'];
+function thumbFila(p){
+  if(p.foto)return `<div class="pr-th"><img src="${esc(p.foto)}" alt=""></div>`;
+  const h=hueDe(p.id);return `<div class="pr-th" style="background:hsl(${h} 40% 86%);color:hsl(${h} 40% 28%)">${esc(iniciales(p.nombre))}</div>`;
+}
+function renderPedido(){
+  if(!dispositivo||!$('ped-grid'))return;
+  $('ped-cats').innerHTML=AREAS.map(([c,l])=>`<button class="qchip ${c===pedCat?'sel':''}" data-c="${esc(c)}">${l}</button>`).join('');
+  const q=sinAc(pedQ);
+  const lista=q?CAT.filter(p=>sinAc(p.nombre).includes(q)):CAT.filter(p=>enArea(p,pedCat));   // si buscas, busca en todas las áreas
+  $('ped-vacio').style.display=lista.length?'none':'block';
+  const secs=[...new Set(lista.map(p=>p.seccion||''))].sort((a,b)=>{const x=SEC_ORDEN.indexOf(a),y=SEC_ORDEN.indexOf(b);return (x<0?99:x)-(y<0?99:y);});
+  $('ped-grid').innerHTML=secs.map(sc=>`${sc?`<div class="sec-h">${esc(sc)}</div>`:''}<div class="plist">`+lista.filter(p=>(p.seccion||'')===sc).map(p=>{
+    const c=pedItems[p.id],sel=c!==undefined;
+    return `<div class="prow ${sel?'sel':''}" data-id="${esc(p.id)}">${thumbFila(p)}
+      <div class="pr-main"><div class="pr-n">${esc(p.nombre)}</div><div class="pr-d">${sel?`Pedir: <b>${fmtN(c)}</b> ${esc(p.resto||'')}`:`(${esc(descDe(p))})`}</div></div>
+      ${sel?`<span class="pr-ck">✓</span><button class="pr-ed" data-ed="${esc(p.id)}" aria-label="Cambiar cantidad">✎</button>`:'<span class="pr-add">＋</span>'}</div>`;}).join('')+`</div>`).join('');
+  const n=Object.keys(pedItems).length;
+  $('ped-count').textContent=`${n} producto${n===1?'':'s'}`;
+  $('ped-send').disabled=!n;
+  renderMisPedidos();
+}
+function pedTap(id){   // un toque marca / desmarca el producto con su cantidad habitual
+  const p=CAT.find(x=>x.id===id);if(!p)return;vib();
+  if(pedItems[id]===undefined)pedItems[id]=p.cant||1;else delete pedItems[id];
+  guardarBorrador();renderPedido();
+}
+let qtyId=null;
+function abrirQty(id){
+  qtyId=id;const p=CAT.find(x=>x.id===id);
+  $('qm-nombre').textContent=p.nombre;$('qm-unit').textContent=p.unidad_medida||'';qtyPaint();$('qm').classList.add('open');
+}
+function qtyPaint(){$('qm-val').textContent=fmtN(pedItems[qtyId]||0);}
+function qtyAdd(d){vib(10);pedItems[qtyId]=Math.max(0,r2((pedItems[qtyId]||0)+d));qtyPaint();}
+function qtyCerrar(){
+  if(qtyId&&!(pedItems[qtyId]>0))delete pedItems[qtyId];
+  guardarBorrador();$('qm').classList.remove('open');qtyId=null;renderPedido();
+}
+function pedEnviar(){
+  const ids=Object.keys(pedItems).filter(id=>CAT.some(p=>p.id===id));
+  if(!ids.length){showToast('⚠️ Agrega al menos un producto');return;}
+  const items=ids.map(id=>{const p=CAT.find(x=>x.id===id);
+    return {producto_id:id,producto_nombre:p.nombre,unidad_medida:p.unidad_medida||'',categoria:p.categoria||'',subcategoria:p.subcategoria||'',cantidad:pedItems[id],nota:''};});
+  const ref=doc(collection(db,'pedidos_locales'));          // id generado aquí: funciona sin conexión
+  setDoc(ref,{local:LOCAL_CODE[dispositivo.local],estacion:dispositivo.estacion,estado:'por_aprobar',enviado_por:dispositivo.estacion+' · '+dispositivo.local,
+    fecha_envio:serverTimestamp(),nota:'',items,ajustes:{},compra_lista_id:null,despacho_id:null})
+    .catch(e=>{console.error(e);showToast('❌ No se pudo enviar el pedido');});
+  const respaldo={...pedItems};
+  pedItems={};guardarBorrador();renderPedido();beep(988,.15);vib(40);
+  showUndo('Enviado a revisión del encargado',async()=>{await deleteDoc(ref);pedItems=respaldo;guardarBorrador();renderPedido();});
+}
+const ESTADO_PED={por_aprobar:['Esperando revisión','wn'],rechazado:['Rechazado','er'],enviado:['Enviado a Facility','wn'],en_proceso:['En proceso','ac'],procesado:['Listo (despachado / en compras)','ok']};
+function fechaTxt(ts){try{const d=ts?.toDate?ts.toDate():new Date();return d.toLocaleString('es-EC',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+function renderMisPedidos(){
+  const w=$('ped-mios');if(!w)return;
+  renderRev();
+  w.innerHTML=pedMios.slice(0,8).map(p=>{
+    const [lab,cls]=ESTADO_PED[p.estado]||[p.estado,'wn'];
+    const its=(p.items||[]).map(i=>{
+      const aj=p.ajustes&&p.ajustes[i.producto_id]!==undefined?p.ajustes[i.producto_id]:i.cantidad;
+      const cambio=aj!==i.cantidad;
+      return `<div class="mp-it"><span>${esc(i.producto_nombre)}</span><span>${aj===0?'<b style="color:var(--er)">no se envía</b>':`${cambio?`<s>${fmtN(i.cantidad)}</s> `:''}<b>${fmtN(aj)}</b> ${esc(i.unidad_medida)}`}</span></div>`;}).join('');
+    return `<div class="card"><div class="mp-h"><span>${fechaTxt(p.fecha_envio)} · ${esc(p.estacion||'')}<br><small>${esc(p.enviado_por||'')}</small></span><span class="tag ${cls}">${lab}</span></div>${its}</div>`;
+  }).join('')||'<div class="vacio">Aún no hay pedidos enviados.</div>';
+}
+// Revisión del encargado (dentro del mismo módulo): corrige cantidades, aprueba y envía a Facility
+let revEdit={};
+function renderRev(){
+  if(!$('rev-lista'))return;
+  const l=pedMios.filter(p=>p.estado==='por_aprobar');
+  $('rev-wrap').style.display=l.length?'block':'none';
+  $('rev-lista').innerHTML=l.map(p=>{const ed=revEdit[p.id]||{};
+    const rows=(p.items||[]).map((i,k)=>{const c=ed[k]!==undefined?ed[k]:i.cantidad;
+      return `<button class="rev-it ${c===0?'off':''}" data-o="${esc(p.id)}" data-k="${k}"><span>${esc(i.producto_nombre)}</span><span><b>${fmtN(c)}</b> ${esc(i.unidad_medida)} ✎</span></button>`;}).join('');
+    return `<div class="card"><div class="mp-h"><span>${fechaTxt(p.fecha_envio)} · ${esc(p.estacion||'')}</span><span class="tag wn">Por revisar</span></div>${rows}
+      <div class="qm-row" style="grid-template-columns:1fr 2fr;margin:10px 0 0"><button class="bt er" data-rej="${esc(p.id)}">Rechazar</button><button class="bt ok" data-apr="${esc(p.id)}">✔ Aprobar y enviar a Facility</button></div></div>`;}).join('');
+}
+async function revAprobar(id){
+  const p=pedMios.find(x=>x.id===id);if(!p||p.estado!=='por_aprobar')return;
+  if(!quien){showToast('⚠️ Elige quién aprueba');return;}
+  const ed=revEdit[id]||{};
+  const items=(p.items||[]).map((it,k)=>({...it,cantidad:ed[k]!==undefined?ed[k]:it.cantidad})).filter(it=>it.cantidad>0);
+  if(!items.length){showToast('⚠️ El pedido quedó vacío. Recházalo si no se envía.');return;}
+  try{await setDoc(doc(db,'pedidos_locales',id),{items,estado:'enviado',aprobado_por:quien,fecha_aprobacion:serverTimestamp()},{merge:true});
+    delete revEdit[id];beep(988,.15);vib(40);showToast('✅ Pedido enviado a Facility');}
+  catch(e){console.error(e);showToast('❌ No se pudo enviar');}
+}
+async function revRechazar(id){
+  if(!quien){showToast('⚠️ Elige quién rechaza');return;}
+  try{await setDoc(doc(db,'pedidos_locales',id),{estado:'rechazado',aprobado_por:quien,fecha_aprobacion:serverTimestamp()},{merge:true});delete revEdit[id];showToast('Pedido rechazado');}
+  catch(e){showToast('❌ No se pudo rechazar');}
+}
+function iniciarPedidos(){
+  cargarBorrador();
+  onSnapshot(query(collection(db,'pedidos_locales'),where('local','==',LOCAL_CODE[dispositivo.local])),snap=>{
+    pedMios=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.fecha_envio?.toMillis?.()??Date.now())-(a.fecha_envio?.toMillis?.()??Date.now()));
+    renderMisPedidos();
+  },err=>console.error('pedidos_locales',err));
+}
+
+// ═══════════════════════════════════════════════
+// POR RECIBIR ← Facility (colección `pedidos`, guías de despacho)
+// ═══════════════════════════════════════════════
+let GUIAS=[],guiasPrev=null,recAbierta=null,recib={},recIdx=null,lastRec=null;
+function iniciarRecibir(){
+  onSnapshot(query(collection(db,'pedidos'),where('local','==',LOCAL_CODE[dispositivo.local]),where('estado','==','despachado')),snap=>{
+    GUIAS=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.fecha_despacho?.toMillis?.()??0)-(a.fecha_despacho?.toMillis?.()??0));
+    const ids=new Set(GUIAS.map(g=>g.id));
+    if(guiasPrev&&GUIAS.some(g=>!guiasPrev.has(g.id))){beep(660,.2);setTimeout(()=>beep(880,.2),220);vib([60,40,60]);showToast('📥 Llegó un despacho nuevo');}
+    guiasPrev=ids;
+    if(recAbierta&&!ids.has(recAbierta)&&!lastRec){recAbierta=null;}
+    const b=$('badge-rec');if(b){b.textContent=GUIAS.length;b.style.display=GUIAS.length?'inline-block':'none';}
+    renderRec();
+  },err=>console.error('pedidos',err));
+}
+function renderRec(){
+  if(!$('rec-lista'))return;
+  const det=recAbierta?GUIAS.find(g=>g.id===recAbierta):null;
+  $('rec-listado').style.display=det?'none':'block';$('rec-detalle').style.display=det?'block':'none';
+  if(!det){
+    $('rec-lista').innerHTML=GUIAS.map(g=>`<button class="guia" data-id="${esc(g.id)}"><div><b>Despacho · ${fechaTxt(g.fecha_despacho)}</b><br><small>${esc(g.despachado_por||'Facility')} · ${(g.items||[]).length} productos</small></div><span class="tag wn">Por recibir ›</span></button>`).join('')
+      ||'<div class="vacio">No hay despachos por recibir. 🎉</div>';
+    return;
+  }
+  const hay=det.items.some((it,i)=>recib[i]&&recib[i].cant!==it.cantidad_despachada);
+  $('rec-items').innerHTML=det.items.map((it,i)=>{
+    const r=recib[i],dif=r&&r.cant!==it.cantidad_despachada;
+    return `<button class="pcard ${dif?'dif':''}" data-i="${i}">${thumb({id:it.producto_id,nombre:it.producto_nombre})}
+      <div class="pc-n">${esc(it.producto_nombre)}</div>
+      <div class="pc-u">${dif?`<s>${fmtN(it.cantidad_despachada)}</s> <b>${fmtN(r.cant)}</b>`:`<b>${fmtN(it.cantidad_despachada)}</b>`} ${esc(it.unidad_medida||'')}</div>
+      ${dif&&r.nota?`<div class="pc-nt">${esc(r.nota)}</div>`:''}</button>`;}).join('');
+  $('rec-ok').textContent=hay?'✔ Confirmar con diferencias':'✔ Aceptar todo';
+  $('rec-ok').className='bt '+(hay?'wn':'ok');
+}
+function recCorregir(i){
+  const it=GUIAS.find(g=>g.id===recAbierta).items[i];recIdx=i;vib();
+  openKeypad(it.producto_nombre,recib[i]?recib[i].cant:it.cantidad_despachada,v=>{
+    if(v===it.cantidad_despachada){delete recib[i];renderRec();return;}
+    recib[i]={cant:v,nota:''};recIdx=i;renderRec();$('rm').classList.add('open');
+  },it.unidad_medida);
+}
+function recMotivo(m){
+  if(recIdx!==null&&recib[recIdx])recib[recIdx].nota=m;
+  $('rm').classList.remove('open');vib();renderRec();
+}
+async function recAceptar(){
+  const g=GUIAS.find(x=>x.id===recAbierta);if(!g)return;
+  if(!quien){showToast('⚠️ Elige quién recibe');return;}
+  const code=LOCAL_CODE[dispositivo.local],gref=doc(db,'pedidos',g.id);
+  $('rec-ok').disabled=true;
+  let original=null,agg=null;
+  try{
+    await runTransaction(db,async tx=>{
+      const s=await tx.get(gref);
+      if(!s.exists()||s.data().estado!=='despachado')throw new Error('YA');   // candado
+      original=s.data().items;
+      const items=original.map((it,i)=>{
+        const r=recib[i];const cr=r?r.cant:it.cantidad_despachada;const dif=r2(cr-it.cantidad_despachada);
+        return {...it,cantidad_recibida:cr,diferencia:dif,nota_diferencia:dif!==0?(r&&r.nota||''):''};});
+      agg={};
+      items.forEach(it=>{const a=agg[it.producto_id]=agg[it.producto_id]||{it,sum:0};a.sum=r2(a.sum+it.cantidad_recibida);});
+      const pids=Object.keys(agg);
+      const snaps=await Promise.all(pids.map(p=>tx.get(doc(db,'inventario_local',`${code}__${p}`))));   // todas las lecturas primero
+      const estado=items.some(i=>i.diferencia!==0)?'recibido_diferencias':'recibido_ok';
+      tx.update(gref,{estado,fecha_recepcion:serverTimestamp(),recibido_por:quien,items});
+      pids.forEach((p,k)=>{
+        const a=agg[p];if(!a.sum)return;
+        const actual=snaps[k].exists()?(snaps[k].data().cantidad||0):0;
+        tx.set(doc(db,'inventario_local',`${code}__${p}`),{local:code,producto_id:p,producto_nombre:a.it.producto_nombre,unidad_medida:a.it.unidad_medida||'',
+          categoria:a.it.categoria||'',subcategoria:a.it.subcategoria||'',cantidad:r2(actual+a.sum),actualizado:serverTimestamp()},{merge:true});
+        tx.set(doc(db,'movimientos_inventario_local',`${g.id}__${p}`),{local:code,producto_id:p,tipo:'recepcion_despacho',cantidad:a.sum,guia_id:g.id,fecha:serverTimestamp(),por:quien});
+      });
+    });
+    lastRec={gid:g.id,original,agg:Object.fromEntries(Object.entries(agg).map(([k,v])=>[k,v.sum]))};
+    const gid=g.id;recib={};recAbierta=null;beep(988,.15);vib(40);renderRec();
+    showUndo('Recepción guardada',()=>recDeshacer(gid));
+    setTimeout(()=>{if(lastRec&&lastRec.gid===gid)lastRec=null;},10500);
+  }catch(e){
+    console.error(e);
+    if(e.message==='YA'){showToast('⚠️ Ya fue recibida');recAbierta=null;recib={};renderRec();}
+    else showToast(navigator.onLine?'❌ No se pudo guardar. Intenta otra vez':'📴 Sin conexión: para recibir se necesita internet');
+  }
+  $('rec-ok').disabled=false;
+}
+async function recDeshacer(gid){
+  const L=lastRec;if(!L||L.gid!==gid)throw new Error('sin datos');
+  const code=LOCAL_CODE[dispositivo.local],gref=doc(db,'pedidos',gid),pids=Object.keys(L.agg);
+  await runTransaction(db,async tx=>{
+    const s=await tx.get(gref);
+    if(!s.exists()||!String(s.data().estado).startsWith('recibido'))throw new Error('estado');
+    const snaps=await Promise.all(pids.map(p=>tx.get(doc(db,'inventario_local',`${code}__${p}`))));
+    tx.update(gref,{estado:'despachado',fecha_recepcion:null,recibido_por:null,
+      items:L.original.map(it=>({...it,cantidad_recibida:null,diferencia:null,nota_diferencia:it.nota_diferencia||''}))});
+    pids.forEach((p,k)=>{
+      if(!L.agg[p])return;
+      const actual=snaps[k].exists()?(snaps[k].data().cantidad||0):0;
+      tx.set(doc(db,'inventario_local',`${code}__${p}`),{cantidad:r2(actual-L.agg[p]),actualizado:serverTimestamp()},{merge:true});
+      tx.delete(doc(db,'movimientos_inventario_local',`${gid}__${p}`));
+    });
+  });
+  lastRec=null;
+}
+
+// ═══════════════════════════════════════════════
+// INVENTARIO (conteo por estación y por día; los productos salen del catálogo)
+// ═══════════════════════════════════════════════
+let invCat='cocina',invQ='',invCant={},invCargado='';
+const invDocId=()=>`${dispositivo.local}_${dispositivo.estacion}_${getHoy()}`;
+async function invCargar(){
+  if(invCargado===invDocId())return;
+  invCant={};
+  try{const snap=await getDoc(doc(db,'inventarios',invDocId()));
+    if(snap.exists())(snap.data().items||[]).forEach(i=>{invCant[i.id]=i.cantidad;});invCargado=invDocId();}catch(e){}
+  renderInv();
+}
+function renderInv(){
+  if(!$('inv-grid'))return;
+  $('inv-cats').innerHTML=AREAS.map(([c,l])=>`<button class="qchip ${c===invCat?'sel':''}" data-c="${esc(c)}">${l}</button>`).join('');
+  const q=sinAc(invQ);
+  const lista=q?CAT.filter(p=>sinAc(p.nombre).includes(q)):CAT.filter(p=>enArea(p,invCat));
+  $('inv-vacio').style.display=lista.length?'none':'block';
+  $('inv-grid').innerHTML=lista.map(p=>{const c=invCant[p.id];const hay=c!==undefined;
+    return `<button class="pcard ${hay?'sel':''}" data-id="${esc(p.id)}">${hay?'<span class="pc-ck">✓</span>':''}${thumb(p)}
+      <div class="pc-n">${esc(p.nombre)}</div><div class="pc-u">${hay?`<b>${fmtN(c)}</b> `:'Contar · '}${esc(p.unidad_medida||'')}</div></button>`;}).join('');
+  const n=Object.keys(invCant).filter(id=>CAT.some(p=>p.id===id)).length;
+  $('inv-count').textContent=`${n} contado${n===1?'':'s'}`;$('inv-save').disabled=!n;
+}
+async function invGuardar(){
+  if(!quien){showToast('⚠️ Elige quién cuenta');return;}
+  const items=CAT.filter(p=>invCant[p.id]!==undefined).map(p=>({id:p.id,nombre:p.nombre,unidad:p.unidad_medida||'',categoria:p.categoria||'',cantidad:invCant[p.id]}));
+  if(!items.length)return;
+  $('inv-save').disabled=true;
+  try{await setDoc(doc(db,'inventarios',invDocId()),{local:dispositivo.local,estacion:dispositivo.estacion,fecha:getHoy(),por:quien,items,obs:'',actualizado:serverTimestamp()});
+    beep(988,.15);vib(40);showToast('✅ Inventario guardado');}
+  catch(e){console.error(e);showToast('❌ No se pudo guardar');}
+  renderInv();
+}
+
+// Eventos
+function iniciarUI(){
+  $('inv-grid').addEventListener('click',e=>{const b=e.target.closest('.pcard');if(!b)return;const p=CAT.find(x=>x.id===b.dataset.id);if(!p)return;vib();
+    openKeypad(p.nombre,invCant[p.id],v=>{invCant[p.id]=v;renderInv();},p.unidad_medida);});
+  $('inv-cats').addEventListener('click',e=>{const b=e.target.closest('.qchip');if(b){invCat=b.dataset.c;vib();renderInv();}});
+  $('inv-search').addEventListener('input',e=>{invQ=e.target.value;renderInv();});
+  $('inv-save').addEventListener('click',invGuardar);
+  $('ped-grid').addEventListener('click',e=>{const ed=e.target.closest('[data-ed]');if(ed){vib();abrirQty(ed.dataset.ed);return;}const b=e.target.closest('.prow');if(b)pedTap(b.dataset.id);});
+  $('ped-cats').addEventListener('click',e=>{const b=e.target.closest('.qchip');if(b){pedCat=b.dataset.c;vib();renderPedido();}});
+  $('ped-search').addEventListener('input',e=>{pedQ=e.target.value;renderPedido();});
+  $('ped-send').addEventListener('click',pedEnviar);
+  $('rev-lista').addEventListener('click',e=>{
+    const it=e.target.closest('.rev-it');
+    if(it){const o=it.dataset.o,k=+it.dataset.k,p=pedMios.find(x=>x.id===o);if(!p)return;const i=p.items[k];const cur=(revEdit[o]||{})[k]!==undefined?revEdit[o][k]:i.cantidad;vib();
+      openKeypad(i.producto_nombre,cur,v=>{(revEdit[o]=revEdit[o]||{})[k]=v;renderRev();},i.unidad_medida);return;}
+    const a=e.target.closest('[data-apr]');if(a){revAprobar(a.dataset.apr);return;}
+    const r=e.target.closest('[data-rej]');if(r)revRechazar(r.dataset.rej);
+  });
+  $('qm').addEventListener('click',e=>{
+    const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+    if(a==='done')qtyCerrar();
+    else if(a==='del'){delete pedItems[qtyId];qtyCerrar();}
+    else if(a==='kp'){const id=qtyId;openKeypad($('qm-nombre').textContent,pedItems[id],v=>{pedItems[id]=v;qtyPaint();},$('qm-unit').textContent);}
+    else qtyAdd(parseFloat(a));
+  });
+  $('rec-lista').addEventListener('click',e=>{const b=e.target.closest('.guia');if(!b)return;vib();recAbierta=b.dataset.id;recib={};renderRec();});
+  $('rec-items').addEventListener('click',e=>{const b=e.target.closest('.pcard');if(b)recCorregir(+b.dataset.i);});
+  $('rec-volver').addEventListener('click',()=>{recAbierta=null;recib={};renderRec();});
+  $('rec-ok').addEventListener('click',recAceptar);
+  $('rm').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)recMotivo(b.dataset.m);});
+  $('undo-btn').addEventListener('click',undoPress);
+  $('chip-snd').addEventListener('click',toggleSonido);
+  $('chip-snd').textContent=sonidoOn?'🔊':'🔇';actualizarRed();
+}
+let _listenersOk=false;
+function iniciarListeners(){
+  if(_listenersOk)return;_listenersOk=true;
+  const tr=$('tab-porrecibir'); if(tr&&!$('badge-rec')) tr.insertAdjacentHTML('beforeend','<span class="badge" id="badge-rec"></span>');
+  iniciarCfg();iniciarUI();iniciarCatalogo();iniciarPedidos();iniciarRecibir();
+  pedCat=invCat=AREA_DEF[dispositivo.estacion]||'cocina';
+  ['rec-quien','inv-quien','rev-quien'].forEach(c=>renderQuien(c));renderPedido();renderInv();
+}
+
+// ── EQUIPO / GUÍA ──
+const INVENTARIO_EQUIPO=[{nombre:'Batidora industrial',cant:1,estado:'Bueno'},{nombre:'Horno de panadería',cant:1,estado:'Bueno'},{nombre:'Porcionadora de masa',cant:1,estado:'Bueno'},{nombre:'Laminadora',cant:1,estado:'Bueno'},{nombre:'Carros de pan (bandejas)',cant:4,estado:'Bueno'},{nombre:'Bandejas de horneado',cant:20,estado:'Bueno'},{nombre:'Tazones de mezcla (varios)',cant:6,estado:'Bueno'},{nombre:'Rasquetas de masa',cant:3,estado:'Bueno'},{nombre:'Rodillos',cant:2,estado:'Bueno'},{nombre:'Cortadores y moldes',cant:1,estado:'Bueno'},{nombre:'Termómetro de horno',cant:1,estado:'Bueno'},{nombre:'Balanza digital',cant:1,estado:'Bueno'},{nombre:'Toallas de trabajo',cant:6,estado:'Bueno'},{nombre:'Mandil',cant:2,estado:'Bueno'},{nombre:'Malla de cabello',cant:5,estado:'Bueno'},{nombre:'Cuchillos de panadería',cant:3,estado:'Bueno'},{nombre:'Tabla de corte',cant:2,estado:'Bueno'},{nombre:'Lavavajillas industrial',cant:1,estado:'Bueno'}];
+// Utensilios y equipos por estación. Hoy solo Panadería producción tiene lista.
+const EQUIPO_POR_ESTACION = { 'Panadería producción': INVENTARIO_EQUIPO };
+const GUIA_PRODUCTOS=[{cat:'Panes artesanales',productos:[{nombre:'Cachito',detalle:'15 unidades por tanda. Forma de cuerno, masa dulce enriquecida.'},{nombre:'Cacho con queso',detalle:'12 unidades. Relleno de queso fresco, bordes sellados.'},{nombre:'Cholas',detalle:'Pan redondo suave, miga esponjosa, costra dorada.'},{nombre:'Empanada blanca',detalle:'18 unidades. Masa neutra, sellado tradicional.'},{nombre:'Enquesillados',detalle:'16 unidades. Rellenos de queso, doblados en triángulo.'},{nombre:'Focaccia',detalle:'Pan plano italiano con aceite y hierbas.'},{nombre:'Gusanos de mora',detalle:'16 unidades. Forma enrollada con relleno de mora.'},{nombre:'Jamón con queso',detalle:'16 unidades. Relleno de jamón y queso fundido.'},{nombre:'Palanqueta',detalle:'16 unidades. Pan alargado crocante.'},{nombre:'Pan de orégano',detalle:'Focaccia con orégano y aceite de oliva.'},{nombre:'Pan de panela',detalle:'Dulce, hecho con panela negra. Miga oscura.'},{nombre:'Pan de tiesto',detalle:'Cocción en tiesto de barro. Textura rústica.'},{nombre:'Rollos de canela',detalle:'15 unidades. Enrollados con canela y azúcar.'}]},{cat:'Panes de vegetales',productos:[{nombre:'Pan de camote',detalle:'16 unidades. Masa con puré de camote, color naranja suave.'},{nombre:'Pan de zapallo',detalle:'16 unidades. Masa con zapallo, textura húmeda.'}]},{cat:'Empanadas',productos:[{nombre:'Empanada de verde',detalle:'Masa de plátano verde, relleno variable.'},{nombre:'Empanada integral',detalle:'15 unidades. Masa de harina integral.'},{nombre:'Tortillas de trigo',detalle:'Nuevo. Masa de trigo, delgadas y flexibles.'},{nombre:'Empanada de carne',detalle:'Nuevo. Relleno de carne molida sazonada.'},{nombre:'Empanada de pollo',detalle:'Nuevo. Relleno de pollo desmenuzado.'}]},{cat:'Repostería',productos:[{nombre:'Cake de banana grande',detalle:'Bizcocho de banana, molde grande. Porcionar al servir.'},{nombre:'Cake de banana pequeño',detalle:'Misma receta en molde individual.'},{nombre:'Tiramisú',detalle:'Postre italiano. Producción los viernes.'},{nombre:'Cheesecake frutos rojos',detalle:'Base de galleta, relleno cremoso, cubierta de frutos rojos. Viernes.'},{nombre:'Cheesecake maracuyá',detalle:'Base de galleta, relleno cremoso, cubierta de maracuyá. Viernes.'}]}];
+function renderEquipo(){const tbody=document.getElementById('equipo-tbody');if(!tbody)return;const lista=EQUIPO_POR_ESTACION[dispositivo.estacion]||[];if(!lista.length){tbody.innerHTML='<tr><td colspan="3" style="padding:18px 6px;color:var(--gray-4);">Aún no hay equipos registrados para esta estación.</td></tr>';return;}tbody.innerHTML=lista.map(e=>`<tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 6px;font-weight:500;">${e.nombre}</td><td style="padding:9px 6px;text-align:center;color:var(--gray-5);">${e.cant}</td><td style="padding:9px 6px;"><span style="background:var(--green-soft);color:var(--green);font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;">${e.estado}</span></td></tr>`).join('');}
+function renderGuia(){const wrap=document.getElementById('guia-wrap');if(!wrap)return;wrap.innerHTML=GUIA_PRODUCTOS.map(cat=>`<div class="card" style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:var(--gray-4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">${cat.cat}</div>${cat.productos.map(p=>`<div style="padding:10px 0;border-bottom:1px solid var(--gray-2);"><div style="font-size:14px;font-weight:600;color:var(--black);margin-bottom:3px;">${p.nombre}</div><div style="font-size:12px;color:var(--gray-4);line-height:1.5;">${p.detalle}</div></div>`).join('')}</div>`).join('');}
+
+// ── ENTRADA ──
+function entrarDirecto(estacion){
+  if(!selLocal||!ESTACIONES[estacion])return;
+  dispositivo={local:selLocal,estacion};
+  const est=ESTACIONES[dispositivo.estacion];
+  listaBajas=est.bajas; listaProd=est.prod;
+  document.getElementById('b-producto-list').innerHTML=listaBajas.map(p=>`<option value="${p}">`).join('');
+  document.getElementById('p-producto-list').innerHTML=listaProd.map(p=>`<option value="${p}">`).join('');
+  document.getElementById('login-screen').classList.add('hidden');
+  const tabsEl=document.getElementById('nav-tabs');tabsEl.innerHTML='';
+  est.tabs.forEach((id,i)=>{
+    const btn=document.createElement('button');
+    btn.className='nav-tab'+(i===0?' active':'');btn.id='tab-'+id;btn.textContent=TAB_LABEL[id];
+    btn.onclick=()=>showPage(id);tabsEl.appendChild(btn);
+  });
+  prefillLocal();
+  document.getElementById('fab-clock').style.display='flex';
+  const foot=document.getElementById('foot-ubicacion');
+  foot.textContent=`📍 ${dispositivo.local}  ·  ${est.icon} ${dispositivo.estacion}`;
+  foot.style.display='flex';
+  showPage(est.tabs[0]);
+  if(est.checklist) clIniciar(); else clVacio();
+  iniciarListeners();
 }
 
 // ── EXPONER ──
 window._showPage=showPage;window._onLocalChange=onLocalChange;window._onEncargadoChange=onEncargadoChange;
-window._onProductoChange=onProductoChange;window._selChip=selChip;
-window._confirmarBaja=confirmarBaja;window._confirmarProd=confirmarProd;
-window._cerrarModal=cerrarModal;
-window._onClockLocal=onClockLocal;window._buscarEmpleado=buscarEmpleado;
-window._marcarTurno=marcarTurno;window._onTipsLocal=onTipsLocal;window._selChipTips=selChipTips;
-window._confirmarTips=confirmarTips;window._guardarTips=guardarTips;
-window._guardar=guardar;
+window._onProductoChange=onProductoChange;window._selChip=selChip;window._confirmarBaja=confirmarBaja;
+window._confirmarProd=confirmarProd;window._cerrarModal=cerrarModal;window._marcarTurno=marcarTurno;
+window._onTipsLocal=onTipsLocal;window._selChipTips=selChipTips;window._confirmarTips=confirmarTips;
+window._guardarTips=guardarTips;window._guardar=guardar;window._clToggleTask=clToggleTask;
+window._clUploadPhoto=clUploadPhoto;window._openPhoto=openPhoto;
+window._entrarDirecto=entrarDirecto;window._abrirClock=abrirClock;window._cerrarClock=cerrarClock;window._elegirLocal=elegirLocal;window._elegirEstacion=elegirEstacion;window._clSetResp=clSetResp;
+window._ckSelectLocal=ckSelectLocal;window._ckBack=ckBack;window._ckKey=ckKey;window._ckDel=ckDel;
 </script>
 </body>
 </html>
