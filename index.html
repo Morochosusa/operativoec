@@ -6,8 +6,9 @@
 <title>Morochos OS EC</title>
 <!-- Acceso directo: al "Añadir a pantalla de inicio" se instala con el logo y abre sin barras del navegador -->
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="logo_morochos.png">
-<link rel="apple-touch-icon" href="logo_morochos.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Morochos OS">
@@ -2535,6 +2536,12 @@ window._guardarTips=guardarTips;window._guardar=guardar;window._clToggleTask=clT
 window._clUploadPhoto=clUploadPhoto;window._openPhoto=openPhoto;
 window._entrarDirecto=entrarDirecto;window._abrirClock=abrirClock;window._cerrarClock=cerrarClock;window._elegirLocal=elegirLocal;window._elegirEstacion=elegirEstacion;window._clSetResp=clSetResp;
 window._ckSelectLocal=ckSelectLocal;window._ckBack=ckBack;window._ckKey=ckKey;window._ckDel=ckDel;
+</script>
+<script>
+// Permite instalar la app (acceso directo con logo) y abrirla sin el navegador
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));});
+}
 </script>
 </body>
 </html>
