@@ -951,7 +951,7 @@ const phHTML = (f, cls) => '<div class="ph ' + (cls || '') + '" style="--h:' + h
 
 /* ---------- estado ---------- */
 const S = {
-  screen:'main', op:opInicial(LSget('op', '')), sound:LSget('sound', true), size:LSget('size', 'n'), zones:false, fichas:{}, listaIds:null, regs:[], imp:(LSget('imp', 'nav') === 'no' ? 'no' : 'nav'),
+  screen:'main', op:opInicial(LSget('op', '')), sound:LSget('sound', true), size:LSget('size', 'n'), zones:false, fichas:{}, listaIds:null, regs:[], imp:(['no','usb'].indexOf(LSget('imp', 'nav')) >= 0 ? LSget('imp', 'nav') : 'nav'),
   pid:null, qty:0, mode:'preload', buf:'', modo:'ref', etqOv:null, guard:null, kbd:false, undo:null, ultima:LSget('ultima', {}), fd:null, filtroFalta:false, lt:new Set(), ready:false
 };
 const cur = () => S.pid ? fichaDe(S.pid) : null;
@@ -968,7 +968,7 @@ function layout(){
 }
 function renderTop(){
   const t = $('#pr-top'); if(!t) return;
-  const imp = S.imp === 'nav' ? {cls:'ok', txt:'Imprime etiquetas'} : {cls:'wn', txt:'Sin imprimir'};
+  const imp = S.imp === 'usb' ? (U.estado === 'listo' ? {cls:'ok', txt:'Cable conectado'} : {cls:'wn', txt:'Cable sin conectar'}) : S.imp === 'nav' ? {cls:'ok', txt:'Imprime etiquetas'} : {cls:'wn', txt:'Sin imprimir'};
   const printer = imp.act ? '<button class="stat ' + imp.cls + '" data-act="' + imp.act + '">' + ic('printer', 22) + ' ' + imp.txt + '</button>' : '<button class="stat ' + imp.cls + '" data-act="usb-menu">' + ic('printer', 22) + ' ' + imp.txt + '</button>';
   t.innerHTML = '<div class="ops">' + OPERADORES.map(o => BLOQUEADAS.indexOf(o) >= 0 ? '<button class="btn bloq" data-act="bloq" data-v="' + esc(o) + '">🔒 ' + esc(o) + '</button>' : '<button class="btn ' + (S.op === o ? 'on' : '') + '" data-act="op" data-v="' + esc(o) + '">' + esc(o) + '</button>').join('') + '</div>' +
     '<button class="btn" data-act="go" data-v="hoy">Hoy (' + regsHoy().length + ')</button>' + printer + '<button class="btn" data-act="menu" aria-label="Opciones">' + ic('gear', 26) + '</button>';
@@ -1340,10 +1340,17 @@ function openMenu(){
 }
 function openImpresora(){
   const sel = v => 'btn ' + (S.imp === v ? 'on' : '');
+  const okUsb = usbSoportado(), est = U.estado === 'listo' ? 'ok' : 'wn';
   openModal('<div class="mt">Etiquetas e impresora</div>' +
     '<div class="mu small">Cómo sale la etiqueta al registrar</div>' +
-    '<div class="modos"><button class="' + sel('nav') + '" data-act="imp-modo" data-v="nav">Imprimir</button><button class="' + sel('no') + '" data-act="imp-modo" data-v="no">No imprimir</button></div>' +
-    '<div class="mu small">Imprimir abre el cuadro de impresión del iPad / navegador (elige la impresora de etiquetas y el tamaño del rollo).</div>' +
+    '<div class="modos"><button class="' + sel('usb') + '" data-act="imp-modo" data-v="usb">Cable USB directo</button><button class="' + sel('nav') + '" data-act="imp-modo" data-v="nav">Cuadro de impresión</button><button class="' + sel('no') + '" data-act="imp-modo" data-v="no">No imprimir</button></div>' +
+    '<div class="mu small"><b>Cable USB directo:</b> imprime sin cuadro de diálogo (Zebra, TSC… ZPL/EPL). Solo en Chrome con https.<br><b>Cuadro de impresión:</b> abre el diálogo del navegador.</div>' +
+    (okUsb ? '' : '<div class="mu small" style="color:#b3261e;font-weight:700">Este navegador no permite USB: abre la página en Chrome (con https).</div>') +
+    '<div class="mu small">Impresora por cable (USB)</div>' +
+    '<button class="btn" data-act="usb-conectar">' + ic('printer', 22) + ' Conectar impresora por cable</button>' +
+    (U.msg ? '<div class="mu small" style="font-weight:700;color:' + (est === 'ok' ? '#1b7a3a' : '#b3261e') + '">' + esc(U.msg) + '</div>' : '') +
+    '<div class="mu small">Lenguaje de la impresora</div>' +
+    '<div class="modos"><button class="btn ' + (U.cfg.lenguaje === 'ZPL' ? 'on' : '') + '" data-act="usb-len" data-v="ZPL">ZPL</button><button class="btn ' + (U.cfg.lenguaje === 'EPL' ? 'on' : '') + '" data-act="usb-len" data-v="EPL">EPL</button></div>' +
     '<div class="modos"><button class="btn" data-act="usb-med" data-f="ancho_mm">Ancho etiqueta: ' + U.cfg.ancho_mm + ' mm</button><button class="btn" data-act="usb-med" data-f="alto_mm">Alto etiqueta: ' + U.cfg.alto_mm + ' mm</button></div>' +
     '<button class="btn" data-act="probar-impresora">' + ic('printer', 22) + ' Imprimir una etiqueta de prueba</button><button class="btn" data-act="menu">← Volver al menú</button>', 'wide');
 }
@@ -1415,7 +1422,7 @@ function refrescar(){ if(S.screen === 'main'){ const pn = $('#pr-panel'); if(pn)
 window.PRODREG = {
   init(o){
     API = o.api || {}; CODIGO_ADMIN = o.codigo || 0; BLOQUEADAS = o.bloqueadas || []; if(BLOQUEADAS.indexOf(S.op) >= 0) S.op = OPERADORES.filter(x => BLOQUEADAS.indexOf(x) < 0)[0] || S.op; CATALOGO_TEXTO = o.catalogo || '';
-    leerCatalogo(); S.ready = true; S.screen = 'main'; render(); renderTop();
+    leerCatalogo(); S.ready = true; S.screen = 'main'; render(); renderTop(); if(!S.usbIni){ S.usbIni = true; usbIniciar(); }
   },
   setRegistros(arr){ S.regs = (arr || []).sort((a, b) => b.ts - a.ts); renderTop(); if(S.screen === 'hoy') render(); },
   setFichas(obj){ S.fichas = obj || {}; if(S.screen === 'main'){ renderGrid(); renderPanel(); } else if(S.screen === 'fichas') render(); },
