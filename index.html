@@ -1147,7 +1147,21 @@ function lbEPL(j, cfg){
   L.push('B' + m + ',' + y + ',0,1,2,4,50,N,"' + (e.lote || 'SIN-LOTE') + '"'); y += 66;
   L.push('A' + m + ',' + y + ',0,2,1,1,N,"' + e.pie2 + '"'); L.push('P' + e.copias); return L.join('\n') + '\n';
 }
-const lbConstruir = j => U.cfg.lenguaje === 'EPL' ? lbEPL(j, U.cfg) : lbZPL(j, U.cfg);
+function lbTSPL(j, cfg){
+  const e = lbDatos(j), dots = mm => Math.round(mm * cfg.dpi / 25.4), W = dots(cfg.ancho_mm), H = dots(cfg.alto_mm), m = dots(2.5), qrc = Math.max(2, Math.min(8, Math.floor(0.30 * H / 29)));
+  const q = t => String(t).replace(/"/g, ''), L = ['SIZE ' + cfg.ancho_mm + ' mm,' + cfg.alto_mm + ' mm', 'GAP ' + (cfg.gap_mm == null ? 3 : cfg.gap_mm) + ' mm,0 mm', 'DIRECTION 1', 'DENSITY ' + Math.max(0, Math.min(15, Math.round((cfg.oscuridad == null ? 15 : cfg.oscuridad) / 2))), 'CLS']; let y = m;
+  if(e.prueba){ L.push('TEXT ' + m + ',' + y + ',"2",0,1,1,"*** PRUEBA ***"'); y += 24; }
+  L.push('TEXT ' + m + ',' + y + ',"3",0,1,1,"' + q(e.titulo.slice(0, 20)) + '"'); y += 34;
+  L.push('TEXT ' + m + ',' + y + ',"3",0,1,1,"' + q(e.cantidad) + '"'); y += 34;
+  L.push('TEXT ' + m + ',' + y + ',"2",0,1,1,"' + q(e.elaborado) + '"'); y += 28;
+  L.push('QRCODE ' + (W - m - 29 * qrc) + ',' + m + ',L,' + qrc + ',A,0,"' + q(e.lote || 'SIN-LOTE') + '"');
+  L.push('BAR ' + m + ',' + y + ',' + (W - 2 * m) + ',3'); y += 8;
+  L.push('TEXT ' + m + ',' + y + ',"4",0,1,1,"' + q(e.vence) + '"'); y += 44;
+  L.push('TEXT ' + m + ',' + y + ',"1",0,1,1,"' + q(e.pie) + '"'); y += 16;
+  L.push('TEXT ' + m + ',' + y + ',"1",0,1,1,"' + q(e.pie2) + '"', 'PRINT ' + e.copias + ',1');
+  return L.join('\r\n') + '\r\n';
+}
+const lbConstruir = j => U.cfg.lenguaje === 'EPL' ? lbEPL(j, U.cfg) : U.cfg.lenguaje === 'TSPL' ? lbTSPL(j, U.cfg) : lbZPL(j, U.cfg);
 
 /* --- por el navegador: una página por etiqueta, del tamaño del rollo --- */
 function imprimirNavegador(j){
@@ -1350,7 +1364,7 @@ function openImpresora(){
     '<button class="btn" data-act="usb-conectar">' + ic('printer', 22) + ' Conectar impresora por cable</button>' +
     (U.msg ? '<div class="mu small" style="font-weight:700;color:' + (est === 'ok' ? '#1b7a3a' : '#b3261e') + '">' + esc(U.msg) + '</div>' : '') +
     '<div class="mu small">Lenguaje de la impresora</div>' +
-    '<div class="modos"><button class="btn ' + (U.cfg.lenguaje === 'ZPL' ? 'on' : '') + '" data-act="usb-len" data-v="ZPL">ZPL</button><button class="btn ' + (U.cfg.lenguaje === 'EPL' ? 'on' : '') + '" data-act="usb-len" data-v="EPL">EPL</button></div>' +
+    '<div class="modos"><button class="btn ' + (U.cfg.lenguaje === 'ZPL' ? 'on' : '') + '" data-act="usb-len" data-v="ZPL">ZPL</button><button class="btn ' + (U.cfg.lenguaje === 'EPL' ? 'on' : '') + '" data-act="usb-len" data-v="EPL">EPL</button><button class="btn ' + (U.cfg.lenguaje === 'TSPL' ? 'on' : '') + '" data-act="usb-len" data-v="TSPL">TSPL</button></div>' +
     '<div class="modos"><button class="btn" data-act="usb-med" data-f="ancho_mm">Ancho etiqueta: ' + U.cfg.ancho_mm + ' mm</button><button class="btn" data-act="usb-med" data-f="alto_mm">Alto etiqueta: ' + U.cfg.alto_mm + ' mm</button></div>' +
     '<button class="btn" data-act="probar-impresora">' + ic('printer', 22) + ' Imprimir una etiqueta de prueba</button><button class="btn" data-act="menu">← Volver al menú</button>', 'wide');
 }
@@ -1563,7 +1577,7 @@ const ESTACIONES = {
 };
 // Módulos habilitados en esta etapa de prueba. Los demás se ven con 🔒 para que el equipo sepa que vienen, pero no se pueden abrir.
 // Para habilitar uno más, agrégalo a esta lista.
-const MODULOS_ACTIVOS=['prod','pedido','porrecibir'];
+const MODULOS_ACTIVOS=['prod','bajas','pedido','porrecibir'];
 const TABS=['check','prod','bajas','pedido','porrecibir','inventario','equipo','tips','guia'];   // orden de los módulos
 const AREAS_EST=['Panadería producción','Panadería','Cafetería','Cocina'];
 const estMod={check:'',bajas:'',equipo:''};      // área elegida dentro de cada módulo
