@@ -281,6 +281,18 @@
   .cfg-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;} .cfg-name{flex:1;min-width:0;} .cfg-row .bt{min-height:56px;}
   .rev-it{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:56px;border:none;border-top:1px solid var(--s2);background:none;font-size:18px;font-family:inherit;text-align:left;cursor:pointer;color:var(--black);padding:6px 0;}
   .rev-it.off{opacity:.4;text-decoration:line-through;}
+  .rev-row{display:flex;align-items:center;gap:8px;border-top:1px solid var(--s2);} .rev-row .rev-it{border-top:none;flex:1;min-width:0;}
+  .rev-st{display:block;font-size:14px;color:var(--mu);font-weight:600;text-decoration:none;} .rev-row.off .rev-st{text-decoration:none;}
+  .rev-x{flex-shrink:0;width:auto !important;min-width:64px;min-height:48px;border:2px solid var(--er);background:#fff;color:var(--er);border-radius:12px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 12px;}
+  .rev-row.off .rev-x{border-color:var(--ac);color:var(--ac);}
+  .rev-n{margin:10px 0 0;font-size:15px;color:var(--mu);}
+  .ped-tools{display:flex;gap:8px;padding:8px 10px;border-bottom:1px solid var(--bd);background:#fff;} .ped-tools .bt{flex:1;min-height:52px;font-size:16px;}
+  .ped-tools .bt.on{background:var(--er);color:#fff;border-color:var(--er);}
+  .pr-x{flex-shrink:0;border:2px solid var(--er);background:#fff;color:var(--er);border-radius:12px;min-width:56px;min-height:48px;font-size:20px;cursor:pointer;font-family:inherit;}
+  #np{z-index:430;} .np-box{background:#fff;border-radius:20px;padding:20px;width:min(94vw,460px);max-height:92vh;overflow-y:auto;}
+  .np-box .field label{display:block;font-size:14px;font-weight:700;color:var(--mu);margin-bottom:4px;} .np-box select.form-control{width:100%;}
+  .np-r{display:grid;grid-template-columns:1fr 1fr;gap:10px;} .np-b{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+  .cfg-elim{margin:14px 0 6px;font-size:15px;font-weight:800;color:var(--mu);} .cfg-un{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:2px dashed var(--bd);border-radius:14px;padding:8px 12px;margin-bottom:8px;opacity:.85;}
   .sec-h{background:var(--ac);color:#fff;font-weight:800;font-size:17px;padding:10px 14px;border-radius:12px;margin:16px 0 6px;}
   .plist{background:#fff;border:2px solid var(--bd);border-radius:16px;overflow:hidden;}
   .prow{display:flex;align-items:center;gap:12px;min-height:76px;padding:8px 12px;border-bottom:1px solid var(--bd);cursor:pointer;}
@@ -676,6 +688,7 @@
     </aside>
     <section class="ped-right">
       <div class="pr-head"><div class="pr-title" id="pr-title"></div><div class="pr-sub" id="pr-sub"></div></div>
+      <div class="ped-tools"><button class="bt" id="ped-nuevo">➕ Producto nuevo</button></div>
       <div class="card vacio" id="ped-vacio" style="display:none">No hay productos en esta área todavía.</div>
       <div id="ped-grid"></div>
     </section>
@@ -771,6 +784,15 @@
     <button class="bt wn" data-m="Faltó">Faltó</button><button class="bt wn" data-m="Llegó dañado">Llegó dañado</button>
     <button class="bt wn" data-m="No era lo pedido">No era lo pedido</button><button class="bt" data-m="">Sin motivo</button>
   </div>
+</div></div>
+<div class="qm-overlay" id="np"><div class="np-box">
+  <div class="kp-title" style="text-align:left">➕ Producto nuevo</div>
+  <div class="field"><label>Nombre</label><input class="form-control" id="np-nom" placeholder="Ej. Harina integral" autocomplete="off"></div>
+  <div class="np-r"><div class="field"><label>Área</label><select class="form-control" id="np-area"></select></div>
+  <div class="field"><label>Sección</label><select class="form-control" id="np-sec"><option>Mercado</option><option>Facility</option><option>Bodega</option><option>Grande</option></select></div></div>
+  <div class="np-r"><div class="field"><label>Cantidad habitual</label><input type="text" class="form-control" id="np-cant" value="1" inputmode="decimal" autocomplete="off"></div>
+  <div class="field"><label>Presentación (ej. × 1 lb, cajas)</label><input class="form-control" id="np-res" placeholder="× 1 lb"></div></div>
+  <div class="np-b"><button class="bt" id="np-cancel">Cancelar</button><button class="bt ok" id="np-ok">Crear producto</button></div>
 </div></div>
 <div class="qm-overlay" id="cfg" style="z-index:450;align-items:stretch"><div class="cfg-box">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px"><div class="kp-title" style="margin:0;text-align:left;font-size:22px">⚙ Productos (manager)</div><button class="bt" id="cfg-cerrar">Cerrar ✕</button></div>
@@ -1943,7 +1965,7 @@ function renderQuien(cont,onChange){
 // ══ CATÁLOGO DE PRODUCTOS (se carga aquí, en Morochos OS) ══
 // Una línea por producto:  nombre; unidad; área; subcategoría; cantidad habitual
 // Áreas: cocina, cafetería, panadería producción, limpieza.  Subcategoría: mercado (se compra), bodega o facility (se despacha).
-const CATALOGO_TEXTO=`
+const CATALOGO_LV=`
 # cocina
 ## Mercado
 Tomates cherry (5 × 1 lb)
@@ -2022,26 +2044,229 @@ Papel aluminio (1 rollos × 200m)
 Contenedor 5x5 ensaladas (1 paquetes × 25 unidades)
 Lonchera 8 1/2 x 5 1/2 (2 paquetes × 25 unid)
 Papel para papas (3 paquetes × 50)
+# limpieza
+## Bodega
+Desinfectante Krick piso (1 × 1 galón)
+Limpiavidrios (1 × 1 gl)
+Alcohol antibacterial (1 × 1 galón)
+Jabón líquido para manos Tork (3 × 1000ml)
+Foaming desengrasante (1 × 1 gl)
+Detergente líquido loza máquina (1 × 1 gl)
+Brizze ambientador aerosol (1 unidad)
+Gel antibacterial (1 × 2 litros)
+Lavavajillas dispensador (1 × 1 galón)
+Metaquat desinfectante superficies (1 × 1 gl)
+Cloro 100% (1 × 1 gl)
+Atomizadores (2)
+Vinagre blanco para limpieza (1 galón)
+Detergente en polvo (5 fundas × 500g)
+Esponja amarilla con verde (2 unidades)
+Esponja lavaplatos negra (2 unidades)
+Esponja lavaplatos rosada (2 unidades)
+Estropajo industrial (3 unidades)
+Lija para limpieza de plancha (3 unidades)
+Fundas de basura celeste 30x36 (3 × 10 uds)
+Fundas de basura negra 30x36 (3 × 10 uds)
+Guantes de caucho talla 8 (1 × 1 par)
+Guantes de caucho talla 9 (1 × 1 par)
+Guantes negros (1 caja)
+Paño azul (10)
+Paño blanco (1)
+Paño café (4)
+Paño celeste (2)
+Paño rojo (10)
+Paños amarillos (2)
+Paños verde (2)
+Paños verde limón (6)
+Limpión de tablet
+Escoba de plástico para salón con palo (2)
+Escoba de madera grande (1)
+Recogedor de metal (1)
+Raid doble acción azul (1)
+Funda basura negra 50x70 (3 rollos)
+Filtros para luz UV (4)
+Papel higiénico Tork (2 × 1 rollo)
+Malla para cabello negro (1 × 100 uds)
+Gel para cabello (1)
+Jabones lavatodo (1)
+Toalla de mano Tork flujo central (2 × 1 rollo)
+Cepillo de acero
+Pilas triple A (2)
+Sparclean Pot & Pan detergente líquido para vajillas (1 galón)
+## Botiquín
+Mascarillas (1 cajas)
+Curitas (1 caja)
+Paracetamol
+Buscapina (10)
+# cafetería
+## Mercado
+Perejil (1 × 1 atado)
+Apio tallo grueso (2 × 1 atado)
+Espinaca americana (1 × 1 atado)
+Remolacha (1 × 1 atado)
+Limón 100 (1 saco × 50 uds)
+Naranja colombiana grande (2 sacos × 100 uds)
+Pepino saco (1 saco × 40 uds)
+Zanahoria (1 saco × 50 lb)
+Piña hawaiana (1 caja × 15 uds)
+Manzana verde (1 caja × 210 uds)
+Manzana roja americana (1 caja × 220 uds)
+Banana fresca (1 caja × 20 uds)
+Cúrcuma (1 × ½ lb)
+Jengibre (1 × ½ lb)
+Sandía pequeña (1 uds)
+Papaya hawaiana (1 uds)
+## Facility
+Melón congelado (1 empaques × 1.500g)
+Mora congelada (4 empaques × 1.500g)
+Fresa congelada (2 empaques × 1.500g)
+Mango congelado (5 empaques × 1.500g)
+Papaya congelada (2 fundas × 1.500g)
+Banana congelada (2 empaques × 1.500g)
+Piña congelada (2 empaques × 1.500g)
+Tomate de árbol (30 empaques × 100 g)
+Nuez (10 unid × 90 g)
+Almendras (10 × 90g)
+Arándanos (10 × 90g)
+Mix frutos secos (40 uds × 70g)
+Café blend grano (5 fundas × 340g)
+Café Nabón grano (5 fundas × 340g)
+Café Ibarra grano (5 fundas × 340g)
+Café blend grano fundas de 160 g (20)
+Café Ibarra fundas de 1 kg (5)
+Pasas (0.5 libra)
+Canela en polvo (1 fundas × 200g)
+Cacao molido Munai (Chocolate 100%) (3 libras × 454g)
+## Bodega
+Cuchara sopera grande plasti util (2 paquetes × 50 unid)
+Azúcar blanca (5 fundas × 1.5 kg)
+Cuchara negra pequeña HG (4 × 50 unid)
+Tenedores grandes HG (2 paquetes × 50 unid)
+Mini tenedor para papas (2 paquetes × 50 unid)
+Cubiertos desechables negros (2)
+Palillos de dientes pequeños (1 × 30g)
+Removedor de café (2 paquetes × 100 unid)
+Funda de papel #6 (2)
+Funda de papel #12 (2)
+Funda de papel #3 (2)
+Papel de despacho (1 paquete × 75 uds)
+Fundas dina HG #4 (2)
+Fundas dina blancas HG #5 (2)
+Fundas transparentes 8x12 (1 rollos)
+Servilleta fantasía 24x24 de 300 u (3)
+Tarrina transparente de litro (2)
+Vasos bebidas calientes 10oz (10 paquetes × 20 uds)
+Vasos bebidas calientes 14oz (5 paquetes × 20 unid)
+Vaso 7 oz Opal HG (1 paquetes × 50 unid)
+Vaso 1 oz Opal vacan (2 paquetes × 50 unid)
+Vasitos salsas negros 2 oz (2 paquetes × 100 unid)
+Tapas bebidas calientes 14oz (2 tiras × 100 unid)
+Tapas bebidas calientes 10oz (2 tiras × 100 unid)
+Tapas salseros 2oz (1)
+Tapas para tarrina litro (1 paquetes × 50 unid)
+Bowl negro con tapa (1)
+Portacomida negro x 25 (2)
+Guantes multiuso Handy (2 cajas × 100 unid)
+Plástico film industrial (1 rollos × 2.000 ft)
+Filtros de café paquete (1)
+Papel térmico de impresora (3 rollos × 5 uds)
+Leche semidescremada (3 unidades × 1 litro)
+Crema de leche Nutri caja (1 cajas × 1 litro)
+Leche de almendras (2 cajas × 1 litro)
+Leche entera (5 cajas × 12 litros)
+Azúcar morena (1 × 1 kg)
+Stevia en gotas (1 botellas × 30ml)
+Miel pura Nature's Heart (1 × 620 g)
+Endulzante Splenda (1 caja)
+Cajitas para vaso (50 × 1 uds)
+Servilleta en Z Blanchy 14x23 cm de 100 u (5)
+Vasos domo 16 oz (3 tiras × 25 unid)
+Tapas domo Perf 12-16oz (2 paquetes × 25 uds)
+Sorbetes biodegradables empacado (3 paquetes × 100 unid)
+Sorbete flexible niños (3 paquetes × 100 unid)
+Cacao en polvo Nature's Heart (1)
+Marshmallows (2)
+Té Nature's Heart manzanilla (2)
+Crema chantilly (1 cajas × 1 litro)
+Chocolate Milano (4 uds × 650 g)
+# panadería producción
+## Facility
+Arepa masa (0.5 orden)
+Puré de camote (6 empaques × 600g)
+Puré de zapallo (6 empaques × 600g)
+Jamón laminado (150 unidades)
+Queso tortilla molido (1 × 2 kg)
+Queso fresco molido (3 empaques × 6kg)
+Queso fresco bloque (1 empaque × 2 kg)
+Mermelada frutos rojos
+Mermelada de maracuyá
+## Bodega
+Harina blanca (2 quintales × 50 kg)
+Harina de mollete (1 quintales × 50 kg)
+Margarina vegetal (1 caja × 27,5 kg)
+Mermelada de mora
+Polvo de hornear (1 libra)
+Azúcar blanca (5 empaques × 2.5 kg)
+Azúcar morena (1 × 1 kg)
+Ajonjolí blanco (1 empaques × 500g)
+Canela en polvo (1 × 200g)
+Panela molida (1 fundas × 2.5 kg)
+Esencia de banana
+Esencia de vainilla (1 botellas × 500cm3)
+Color caramelo (1 × 500 cm3)
+Crema pastelera
+Azúcar impalpable (1 × 4 kg)
+Chispas de chocolate (1 × 1 kg)
+Parmesano rallado (1 × 400g)
+Sal Crisal (1 fundas × 2 kg)
+Sal en grano para parrilla
+Mantequilla Nutri (1 paquetes)
+Achiote (1 botellas × 1 litro)
+Guantes látex negros talla M (2 cajas)
+Aceite de oliva La Española (1 × 500 ml)
+Pirotines para cupcakes #12 (1 × 50 uds)
+Levadura activa seca (3 × 500 g)
+Estropajo industrial (2 unidades)
+Coco rallado (1 empaques × 250g)
+Huevos medianos (9 cubetas × 30)
+Queso crema (1 × 250g)
+Crema vegetal Chantipak (1 unidades)
+Bizcotelas 75 g (4)
+Galletas María (2)
+Cocoa en polvo 420 g funda grande
+Nuez (1 × 454 g)
+Salvado de trigo (1 × 400 g)
+Avena en hojuelas (1 empaques × 500g)
+Envases para cheesecake
+Café para Nabón fundas de 160 g (20)
+Manteca vegetal bloque
 `;
 const slugId=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
 let OVR={};   // nombres y fotos cambiados desde ⚙ (guardados en Firestore: productos_ajustes)
 // Formato: "# área", "## sección" y una línea por producto:  Nombre (cantidad habitual × presentación)
-let CAT_BASE=(()=>{
+let CAT_BASE=[];
+// Cada local tiene su propia lista. La Victoria usa CATALOGO_LV; El Salado todavía no tiene lista base (se arma con ➕ Producto nuevo hasta que se cargue).
+const CATALOGOS_LOCAL={'La Victoria':CATALOGO_LV,'El Salado':''};
+function armarBase(local){
+  const texto=CATALOGOS_LOCAL[local]||'',pre=local==='La Victoria'?'':(LOCAL_CODE[local]||slugId(local))+'__';
   let area='cocina',sec='';const out=[];
-  CATALOGO_TEXTO.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+  texto.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
     if(l.startsWith('## ')){sec=l.slice(3).trim();return;}
     if(l.startsWith('# ')){area=l.slice(2).trim();return;}
     const m=l.match(/^(.*?)\s*\(\s*(\d+(?:[.,]\d+)?)\s*(.*?)\s*\)\s*$/);
     const nombre=m?m[1]:l,cant=m?parseFloat(m[2].replace(',','.')):1,resto=m?m[3].replace(/\s+/g,' '):'';
     const sub=/^mercado$/i.test(sec)?'mercado':/^facility$/i.test(sec)?'facility':'bodega';   // "Grande" se despacha desde bodega
-    out.push({id:slugId(area)+'_'+slugId(nombre+' '+resto),nombre,cant,resto,categoria:area,seccion:sec,subcategoria:sub});
+    out.push({id:pre+slugId(area)+'_'+slugId(nombre+' '+resto),nombre,cant,resto,categoria:area,seccion:sec,subcategoria:sub});
   });
-  return out;
-})();
+  CAT_BASE=out;
+}
 const unidadDe=p=>(p.resto||'').replace(/^×\s*/,'')||'uds';
 const descDe=p=>`${fmtN(p.cant)}${p.resto?' '+p.resto:''}`;
 let CAT=[];
-function aplicarOvr(){CAT=CAT_BASE.map(p=>{const o=OVR[p.id]||{};const q={...p,nombre:o.nombre||p.nombre,cant:(o.cant>0?o.cant:p.cant),resto:(o.resto!==undefined?o.resto:p.resto),foto:o.foto||''};q.unidad_medida=unidadDe(q);return q;});}
+const subDe=sec=>/^mercado$/i.test(sec)?'mercado':/^facility$/i.test(sec)?'facility':'bodega';
+function propios(){const lc=dispositivo&&LOCAL_CODE[dispositivo.local];if(!lc)return [];return Object.keys(OVR).filter(id=>OVR[id]&&OVR[id].custom&&(OVR[id].local||'la_victoria')===lc).map(id=>{const o=OVR[id];return {id,nombre:o.nombre||'(sin nombre)',cant:o.cant>0?o.cant:1,resto:o.resto||'',categoria:o.categoria||'cocina',seccion:o.seccion||'Bodega',subcategoria:subDe(o.seccion||'Bodega'),_custom:true};});}
+function aplicarOvr(){CAT_TODOS=CAT_BASE.concat(propios()).map(p=>{const o=OVR[p.id]||{};const q={...p,nombre:o.nombre||p.nombre,cant:(o.cant>0?o.cant:p.cant),resto:(o.resto!==undefined?o.resto:p.resto),foto:o.foto||'',oculto:!!o.oculto};q.unidad_medida=unidadDe(q);return q;});CAT=CAT_TODOS.filter(p=>!p.oculto);}
+let CAT_TODOS=[];
 aplicarOvr();
 const AREAS=[['cocina','🍳 Cocina'],['cafetería','🧋 Cafetería'],['panadería producción','🥐 Panadería producción'],['limpieza','🧹 Limpieza']];
 const AREA_DEF={'Cocina':'cocina','Panadería':'cafetería','Cafetería':'cafetería','Panadería producción':'panadería producción'};
@@ -2073,7 +2298,9 @@ function renderCfg(){
     <div class="cfg-name"><input class="form-control" data-nom="${esc(p.id)}" value="${esc(p.nombre)}" placeholder="Nombre">
       <div class="cfg-2"><div class="field" style="margin:0"><label>Cantidad habitual</label><input type="number" class="form-control" data-cant="${esc(p.id)}" value="${p.cant}"></div>
       <div class="field" style="margin:0"><label>Presentación (ej. × 1 lb)</label><input class="form-control" data-res="${esc(p.id)}" value="${esc(p.resto||'')}"></div></div></div>
-    <button class="bt ok" data-guardar="${esc(p.id)}">Guardar</button></div>`).join('')||'<div class="vacio">No hay productos en esta área.</div>';
+    <div style="display:flex;flex-direction:column;gap:8px"><button class="bt ok" data-guardar="${esc(p.id)}">Guardar</button><button class="bt er" data-quitar="${esc(p.id)}">🗑 Eliminar</button></div></div>`).join('')||'<div class="vacio">No hay productos en esta área.</div>';
+  const el=CAT_TODOS.filter(p=>p.oculto&&(q?sinAc(p.nombre).includes(q):enArea(p,cfgCat)));
+  if(el.length)$('cfg-lista').innerHTML+=`<div class="cfg-elim">Eliminados (${el.length})</div>`+el.map(p=>`<div class="cfg-un"><span>${esc(p.nombre)} <small>${esc(descDe(p))}</small></span><button class="bt" data-restaurar="${esc(p.id)}">↩ Restaurar</button></div>`).join('');
 }
 function reducirFoto(file){return new Promise((res,rej)=>{
   const fr=new FileReader();fr.onerror=rej;
@@ -2096,7 +2323,38 @@ async function cfgGuardarNombre(id){
   try{await setDoc(doc(db,'productos_ajustes',id),{nombre,cant:cant>0?cant:null,resto},{merge:true});showToast('✅ Producto guardado');vib();}
   catch(e){showToast('❌ No se pudo guardar');}
 }
+// ── Crear / eliminar productos de la lista de Pedido (se guardan en productos_ajustes; eliminar = ocultar, se puede restaurar)
+function prodNuevoAbrir(area){
+  $('np-area').innerHTML=AREAS.map(([c,l])=>`<option value="${esc(c)}" ${c===area?'selected':''}>${esc(l)}</option>`).join('');
+  $('np-nom').value='';$('np-cant').value='1';$('np-res').value='';$('np-sec').value=area==='cocina'?'Mercado':'Bodega';
+  $('np').classList.add('open');setTimeout(()=>$('np-nom').focus(),120);
+}
+async function prodNuevoGuardar(){
+  const nombre=$('np-nom').value.trim(),cant=parseFloat(String($('np-cant').value).replace(',','.')),resto=$('np-res').value.trim(),categoria=$('np-area').value,seccion=$('np-sec').value;
+  if(!nombre){showToast('⚠️ Escribe el nombre del producto');return;}
+  if(CAT.some(p=>enArea(p,categoria)&&sinAc(p.nombre)===sinAc(nombre)&&sinAc(p.seccion)===sinAc(seccion))){showToast('⚠️ Ese producto ya existe en la lista');return;}
+  const id='x_'+slugId(categoria)+'_'+slugId(nombre)+'_'+Date.now().toString(36);
+  const dato={custom:true,local:LOCAL_CODE[dispositivo.local],nombre,cant:cant>0?cant:1,resto,categoria,seccion,creado_por:(dispositivo&&dispositivo.local)||'',fecha_creacion:serverTimestamp()};
+  OVR[id]=dato;aplicarOvr();pedCat=categoria;pedQ='';if($('ped-search'))$('ped-search').value='';renderPedido();renderInv();
+  $('np').classList.remove('open');beep(988,.12);vib(30);showToast('✅ Producto creado');
+  try{await setDoc(doc(db,'productos_ajustes',id),dato);}catch(e){console.error(e);delete OVR[id];aplicarOvr();renderPedido();renderInv();showToast('❌ No se pudo crear el producto');}
+}
+async function prodEliminar(id){
+  const p=CAT_TODOS.find(x=>x.id===id);if(!p)return;
+  if(!confirm('¿Eliminar "'+p.nombre+'" de la lista de pedido?\nSe puede restaurar desde ⚙ Productos.'))return;
+  delete pedItems[id];guardarBorrador();
+  try{await setDoc(doc(db,'productos_ajustes',id),{oculto:true},{merge:true});vib(30);showToast('🗑 Producto eliminado');}
+  catch(e){console.error(e);showToast('❌ No se pudo eliminar');}
+}
+async function prodRestaurar(id){
+  try{await setDoc(doc(db,'productos_ajustes',id),{oculto:false},{merge:true});showToast('✅ Producto restaurado');}
+  catch(e){showToast('❌ No se pudo restaurar');}
+}
 function iniciarCfg(){
+  $('ped-nuevo').addEventListener('click',()=>{vib();prodNuevoAbrir(pedCat||'cocina');});
+  $('np-cancel').addEventListener('click',()=>$('np').classList.remove('open'));
+  $('np-ok').addEventListener('click',prodNuevoGuardar);
+  $('np-nom').addEventListener('keydown',e=>{if(e.key==='Enter')prodNuevoGuardar();});
   $('chip-cfg').addEventListener('click',()=>{
     openKeypad('Código del manager',0,v=>{
       if(v!==CODIGO_MANAGER){showToast('❌ Código incorrecto');vib([60,40,60]);return;}
@@ -2106,7 +2364,9 @@ function iniciarCfg(){
   $('cfg-cats').addEventListener('click',e=>{const b=e.target.closest('.qchip');if(b){cfgCat=b.dataset.c;renderCfg();}});
   $('cfg-search').addEventListener('input',e=>{cfgQ=e.target.value;renderCfg();});
   $('cfg-lista').addEventListener('change',e=>{const f=e.target.closest('[data-foto]');if(f&&f.files[0])cfgSubirFoto(f.dataset.foto,f.files[0]);});
-  $('cfg-lista').addEventListener('click',e=>{const b=e.target.closest('[data-guardar]');if(b)cfgGuardarNombre(b.dataset.guardar);});
+  $('cfg-lista').addEventListener('click',e=>{const b=e.target.closest('[data-guardar]');if(b){cfgGuardarNombre(b.dataset.guardar);return;}
+    const q=e.target.closest('[data-quitar]');if(q){prodEliminar(q.dataset.quitar);return;}
+    const r=e.target.closest('[data-restaurar]');if(r)prodRestaurar(r.dataset.restaurar);});
 }
 
 // ═══════════════════════════════════════════════
@@ -2215,9 +2475,11 @@ function renderOv(){
   }
   const ed=revEdit[p.id]||{};
   tit.textContent=`Revisar · ${p.estacion||''}`;
-  body.innerHTML=`<button class="bt" data-volver style="margin-bottom:8px">‹ Volver a la lista</button><p style="color:var(--mu);font-size:16px;margin-bottom:6px">Toca un producto para cambiar la cantidad (0 lo quita).</p>
+  const nQuitar=(p.items||[]).filter((i,k)=>(ed[k]!==undefined?ed[k]:i.cantidad)===0).length;
+  body.innerHTML=`<button class="bt" data-volver style="margin-bottom:8px">‹ Volver a la lista</button><p style="color:var(--mu);font-size:16px;margin-bottom:6px">Toca un producto para cambiar la cantidad. Usa <b>Quitar</b> si ya hay en stock y no hace falta pedirlo.</p>
     <div class="plist" style="border:2px solid var(--bd);border-radius:14px;padding:0 12px">`+(p.items||[]).map((i,k)=>{const c=ed[k]!==undefined?ed[k]:i.cantidad;
-    return `<button class="rev-it ${c===0?'off':''}" data-o="${esc(p.id)}" data-k="${k}"><span>${esc(i.producto_nombre)}</span><span><b>${fmtN(c)}</b> ${esc(i.unidad_medida)} ✎</span></button>`;}).join('')+`</div>`;
+    const st=invStock[estKey(p.estacion||i.categoria)+'__'+i.producto_id];
+    return `<div class="rev-row ${c===0?'off':''}"><button class="rev-it ${c===0?'off':''}" data-o="${esc(p.id)}" data-k="${k}"><span>${esc(i.producto_nombre)}${st!==undefined?`<span class="rev-st">En sistema: ${fmtN(st)}</span>`:''}</span><span><b>${fmtN(c)}</b> ${esc(i.unidad_medida)} ✎</span></button><button class="rev-x" data-del="${esc(p.id)}" data-k="${k}">${c===0?'↩ Volver':'🗑 Quitar'}</button></div>`;}).join('')+`</div>`+(nQuitar?`<p class="rev-n">${nQuitar} producto${nQuitar===1?'':'s'} se quitará${nQuitar===1?'':'n'} del pedido al aprobar.</p>`:'');
   foot.innerHTML=`<button class="bt er" data-rej="${esc(p.id)}">Rechazar</button><button class="bt ok" data-apr="${esc(p.id)}">✔ Aprobar y enviar a Facility</button>`;
 }
 async function revAprobar(id){
@@ -2225,7 +2487,8 @@ async function revAprobar(id){
   const ed=revEdit[id]||{};
   const items=(p.items||[]).map((it,k)=>({...it,cantidad:ed[k]!==undefined?ed[k]:it.cantidad})).filter(it=>it.cantidad>0);
   if(!items.length){showToast('⚠️ El pedido quedó vacío. Recházalo si no se envía.');return;}
-  try{await setDoc(doc(db,'pedidos_locales',id),{items,estado:'enviado',aprobado_por:APROBADOR,fecha_aprobacion:serverTimestamp()},{merge:true});
+  const eliminados=(p.items||[]).filter((it,k)=>ed[k]===0).map(it=>({producto_id:it.producto_id,producto_nombre:it.producto_nombre,cantidad_pedida:it.cantidad,unidad_medida:it.unidad_medida}));
+  try{await setDoc(doc(db,'pedidos_locales',id),{items,eliminados,estado:'enviado',aprobado_por:APROBADOR,fecha_aprobacion:serverTimestamp()},{merge:true});
     delete revEdit[id];revSel=null;beep(988,.15);vib(40);showToast('✅ Pedido enviado a Facility');
     if(!pedMios.some(x=>x.id!==id&&x.estado==='por_aprobar'))ovCerrar();else renderOv();}
   catch(e){console.error(e);showToast('❌ No se pudo enviar');}
@@ -2429,6 +2692,9 @@ function iniciarUI(){
   $('ov').addEventListener('click',e=>{
     const ab=e.target.closest('[data-abrir]');if(ab){vib();revSel=ab.dataset.abrir;renderOv();return;}
     if(e.target.closest('[data-volver]')){revSel=null;renderOv();return;}
+    const dl=e.target.closest('[data-del]');
+    if(dl){const o=dl.dataset.del,k=+dl.dataset.k,p=pedMios.find(x=>x.id===o);if(!p)return;const ed=(revEdit[o]=revEdit[o]||{});vib();
+      if(ed[k]===0)delete ed[k];else ed[k]=0;renderOv();return;}
     const it=e.target.closest('.rev-it');
     if(it){const o=it.dataset.o,k=+it.dataset.k,p=pedMios.find(x=>x.id===o);if(!p)return;const i=p.items[k];const cur=(revEdit[o]||{})[k]!==undefined?revEdit[o][k]:i.cantidad;vib();
       openKeypad(i.producto_nombre,cur,v=>{(revEdit[o]=revEdit[o]||{})[k]=v;renderOv();},i.unidad_medida);return;}
@@ -2528,7 +2794,7 @@ function iniciarProd(){
 // ── ENTRADA ──
 function entrarDirecto(){
   if(!selLocal)return;
-  dispositivo={local:selLocal};
+  dispositivo={local:selLocal};armarBase(selLocal);aplicarOvr();
   document.getElementById('login-screen').classList.add('hidden');
   const tabsEl=document.getElementById('nav-tabs');tabsEl.innerHTML='';
   TABS.forEach((id,i)=>{
