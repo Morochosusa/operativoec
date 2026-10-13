@@ -286,6 +286,9 @@
   .rev-x{flex-shrink:0;width:auto !important;min-width:64px;min-height:48px;border:2px solid var(--er);background:#fff;color:var(--er);border-radius:12px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 12px;}
   .rev-row.off .rev-x{border-color:var(--ac);color:var(--ac);}
   .rev-n{margin:10px 0 0;font-size:15px;color:var(--mu);}
+  .mp-sec{background:var(--acbg);color:var(--ac);font-weight:800;font-size:14px;padding:6px 10px;border-radius:8px;margin:10px 0 2px;}
+  .mp-del{margin-top:10px;width:100%;min-height:48px;border:2px solid var(--er);background:#fff;color:var(--er);border-radius:12px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .guia-row{display:flex;gap:8px;align-items:stretch;margin-bottom:8px;} .guia-row .guia{flex:1;margin:0;} .guia-row .rev-x{align-self:stretch;}
   .ped-tools{display:flex;gap:8px;padding:8px 10px;border-bottom:1px solid var(--bd);background:#fff;} .ped-tools .bt{flex:1;min-height:52px;font-size:16px;}
   .ped-tools .bt.on{background:var(--er);color:#fff;border-color:var(--er);}
   .pr-x{flex-shrink:0;border:2px solid var(--er);background:#fff;color:var(--er);border-radius:12px;min-width:56px;min-height:48px;font-size:20px;cursor:pointer;font-family:inherit;}
@@ -2426,7 +2429,7 @@ function pedEnviar(){
   if(!ids.length){showToast('⚠️ Agrega al menos un producto');return;}
   const porArea={};   // un pedido por área (cada uno se revisa aparte)
   ids.forEach(id=>{const p=CAT.find(x=>x.id===id);(porArea[p.categoria||'general']=porArea[p.categoria||'general']||[]).push(
-    {producto_id:id,producto_nombre:p.nombre,unidad_medida:p.unidad_medida||'',categoria:p.categoria||'',subcategoria:p.subcategoria||'',cantidad:pedItems[id],nota:''});});
+    {producto_id:id,producto_nombre:p.nombre,unidad_medida:p.unidad_medida||'',categoria:p.categoria||'',subcategoria:p.subcategoria||'',seccion:p.seccion||'',cantidad:pedItems[id],nota:''});});
   const refs=[];
   Object.entries(porArea).forEach(([area,items])=>{
     const ref=doc(collection(db,'pedidos_locales'));refs.push(ref);        // id generado aquí: funciona sin conexión
@@ -2436,6 +2439,19 @@ function pedEnviar(){
   const respaldo={...pedItems};
   pedItems={};guardarBorrador();renderPedido();beep(988,.15);vib(40);
   showUndo('Enviado a revisión del encargado',async()=>{await Promise.all(refs.map(r=>deleteDoc(r)));pedItems=respaldo;guardarBorrador();renderPedido();});
+}
+// Sección (Mercado / Facility / Bodega…) de cada producto de un pedido; los pedidos viejos no la guardan, se busca en el catálogo
+const secItem=i=>i.seccion||(CAT_TODOS.find(x=>x.id===i.producto_id)||{}).seccion||({mercado:'Mercado',facility:'Facility',bodega:'Bodega'}[i.subcategoria])||'Otros';
+const secOrd=a=>{const x=SEC_ORDEN.indexOf(a);return x<0?99:x;};
+function porSecciones(items){const g={};items.forEach((it,k)=>{const sc=secItem(it);(g[sc]=g[sc]||[]).push([it,k]);});return Object.keys(g).sort((a,b)=>secOrd(a)-secOrd(b)||a.localeCompare(b)).map(sc=>[sc,g[sc]]);}
+function pedBorrar(id){
+  const p=pedMios.find(x=>x.id===id);if(!p)return;
+  openKeypad('Código del manager',0,async v=>{
+    if(v!==CODIGO_MANAGER){showToast('❌ Código incorrecto');vib([60,40,60]);return;}
+    if(!confirm('¿Eliminar esta lista de '+(p.estacion||'')+' ('+fechaTxt(p.fecha_envio)+')?\nNo se puede deshacer.'))return;
+    try{await deleteDoc(doc(db,'pedidos_locales',id));if(revSel===id)revSel=null;vib(30);showToast('🗑 Lista eliminada');}
+    catch(e){console.error(e);showToast('❌ No se pudo eliminar la lista');}
+  });
 }
 const ESTADO_PED={por_aprobar:['Esperando revisión','wn'],rechazado:['Rechazado','er'],enviado:['Enviado a Facility','wn'],en_proceso:['En proceso','ac'],procesado:['Listo (despachado / en compras)','ok']};
 function fechaTxt(ts){try{const d=ts?.toDate?ts.toDate():new Date();return d.toLocaleString('es-EC',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
@@ -2456,11 +2472,12 @@ function renderOv(){
     tit.textContent='🕘 Pedidos enviados';
     body.innerHTML=pedMios.slice(0,30).map(p=>{
       const [lab,cls]=ESTADO_PED[p.estado]||[p.estado,'wn'];
-      const its=(p.items||[]).map(i=>{
+      const its=porSecciones(p.items||[]).map(([sc,arr])=>`<div class="mp-sec">🗂 ${esc(sc)}</div>`+arr.map(([i])=>{
         const aj=p.ajustes&&p.ajustes[i.producto_id]!==undefined?p.ajustes[i.producto_id]:i.cantidad;
         const cambio=aj!==i.cantidad;
-        return `<div class="mp-it"><span>${esc(i.producto_nombre)}</span><span>${aj===0?'<b style="color:var(--er)">no se envía</b>':`${cambio?`<s>${fmtN(i.cantidad)}</s> `:''}<b>${fmtN(aj)}</b> ${esc(i.unidad_medida)}`}</span></div>`;}).join('');
-      return `<div class="card"><div class="mp-h"><span>${fechaTxt(p.fecha_envio)} · ${esc(p.estacion||'')}<br><small>${esc(p.enviado_por||'')}</small></span><span class="tag ${cls}">${lab}</span></div>${its}</div>`;
+        return `<div class="mp-it"><span>${esc(i.producto_nombre)}</span><span>${aj===0?'<b style="color:var(--er)">no se envía</b>':`${cambio?`<s>${fmtN(i.cantidad)}</s> `:''}<b>${fmtN(aj)}</b> ${esc(i.unidad_medida)}`}</span></div>`;}).join('')).join('');
+      const elim=(p.eliminados||[]).length?`<div class="rev-n">Quitados al revisar: ${(p.eliminados||[]).map(e=>esc(e.producto_nombre)).join(', ')}</div>`:'';
+      return `<div class="card"><div class="mp-h"><span>${fechaTxt(p.fecha_envio)} · ${esc(p.estacion||'')}<br><small>${esc(p.enviado_por||'')}</small></span><span class="tag ${cls}">${lab}</span></div>${its}${elim}<button class="mp-del" data-delped="${esc(p.id)}">🗑 Eliminar lista</button></div>`;
     }).join('')||'<div class="vacio">Aún no hay pedidos enviados.</div>';
     return;
   }
@@ -2469,7 +2486,7 @@ function renderOv(){
   const p=revSel?l.find(x=>x.id===revSel):null;
   if(!p){
     tit.textContent='📋 Por revisar';
-    body.innerHTML=l.map(x=>`<button class="guia" data-abrir="${esc(x.id)}"><div><b>${esc(x.estacion||'')}</b> · ${fechaTxt(x.fecha_envio)}<br><small>${(x.items||[]).length} productos</small></div><span class="tag wn">Revisar ›</span></button>`).join('')
+    body.innerHTML=l.map(x=>`<div class="guia-row"><button class="guia" data-abrir="${esc(x.id)}"><div><b>${esc(x.estacion||'')}</b> · ${fechaTxt(x.fecha_envio)}<br><small>${(x.items||[]).length} productos</small></div><span class="tag wn">Revisar ›</span></button><button class="rev-x" data-delped="${esc(x.id)}" aria-label="Eliminar lista">🗑</button></div>`).join('')
       ||'<div class="vacio">No hay pedidos por revisar. 🎉</div>';
     return;
   }
@@ -2477,9 +2494,9 @@ function renderOv(){
   tit.textContent=`Revisar · ${p.estacion||''}`;
   const nQuitar=(p.items||[]).filter((i,k)=>(ed[k]!==undefined?ed[k]:i.cantidad)===0).length;
   body.innerHTML=`<button class="bt" data-volver style="margin-bottom:8px">‹ Volver a la lista</button><p style="color:var(--mu);font-size:16px;margin-bottom:6px">Toca un producto para cambiar la cantidad. Usa <b>Quitar</b> si ya hay en stock y no hace falta pedirlo.</p>
-    <div class="plist" style="border:2px solid var(--bd);border-radius:14px;padding:0 12px">`+(p.items||[]).map((i,k)=>{const c=ed[k]!==undefined?ed[k]:i.cantidad;
+    <div class="plist" style="border:2px solid var(--bd);border-radius:14px;padding:0 12px">`+porSecciones(p.items||[]).map(([sc,arr])=>`<div class="mp-sec">🗂 ${esc(sc)}</div>`+arr.map(([i,k])=>{const c=ed[k]!==undefined?ed[k]:i.cantidad;
     const st=invStock[estKey(p.estacion||i.categoria)+'__'+i.producto_id];
-    return `<div class="rev-row ${c===0?'off':''}"><button class="rev-it ${c===0?'off':''}" data-o="${esc(p.id)}" data-k="${k}"><span>${esc(i.producto_nombre)}${st!==undefined?`<span class="rev-st">En sistema: ${fmtN(st)}</span>`:''}</span><span><b>${fmtN(c)}</b> ${esc(i.unidad_medida)} ✎</span></button><button class="rev-x" data-del="${esc(p.id)}" data-k="${k}">${c===0?'↩ Volver':'🗑 Quitar'}</button></div>`;}).join('')+`</div>`+(nQuitar?`<p class="rev-n">${nQuitar} producto${nQuitar===1?'':'s'} se quitará${nQuitar===1?'':'n'} del pedido al aprobar.</p>`:'');
+    return `<div class="rev-row ${c===0?'off':''}"><button class="rev-it ${c===0?'off':''}" data-o="${esc(p.id)}" data-k="${k}"><span>${esc(i.producto_nombre)}${st!==undefined?`<span class="rev-st">En sistema: ${fmtN(st)}</span>`:''}</span><span><b>${fmtN(c)}</b> ${esc(i.unidad_medida)} ✎</span></button><button class="rev-x" data-del="${esc(p.id)}" data-k="${k}">${c===0?'↩ Volver':'🗑 Quitar'}</button></div>`;}).join('')).join('')+`</div>`+(nQuitar?`<p class="rev-n">${nQuitar} producto${nQuitar===1?'':'s'} se quitará${nQuitar===1?'':'n'} del pedido al aprobar.</p>`:'');
   foot.innerHTML=`<button class="bt er" data-rej="${esc(p.id)}">Rechazar</button><button class="bt ok" data-apr="${esc(p.id)}">✔ Aprobar y enviar a Facility</button>`;
 }
 async function revAprobar(id){
@@ -2692,6 +2709,7 @@ function iniciarUI(){
   $('ov').addEventListener('click',e=>{
     const ab=e.target.closest('[data-abrir]');if(ab){vib();revSel=ab.dataset.abrir;renderOv();return;}
     if(e.target.closest('[data-volver]')){revSel=null;renderOv();return;}
+    const dp=e.target.closest('[data-delped]');if(dp){pedBorrar(dp.dataset.delped);return;}
     const dl=e.target.closest('[data-del]');
     if(dl){const o=dl.dataset.del,k=+dl.dataset.k,p=pedMios.find(x=>x.id===o);if(!p)return;const ed=(revEdit[o]=revEdit[o]||{});vib();
       if(ed[k]===0)delete ed[k];else ed[k]=0;renderOv();return;}
