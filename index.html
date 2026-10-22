@@ -888,12 +888,12 @@ let API = {};
 const LSget = (k, d) => { try { const v = localStorage.getItem(PREFIJO + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } };
 const LSset = (k, v) => { try { localStorage.setItem(PREFIJO + k, JSON.stringify(v)); return true; } catch(e){ return false; } };
 const STORE = {
-  guardarRegistro(r){ if(API.guardarRegistro) API.guardarRegistro(r); },
-  actualizarRegistro(r){ if(API.actualizarRegistro) API.actualizarRegistro(r); },
+  guardarRegistro(r){ if(r.prueba) return; if(API.guardarRegistro) API.guardarRegistro(r); },
+  actualizarRegistro(r){ if(r.prueba) return; if(API.actualizarRegistro) API.actualizarRegistro(r); },
   guardarFicha(f){ if(API.guardarFicha) API.guardarFicha(f); }
 };
-function alRegistrar(r){ if(API.alRegistrar) API.alRegistrar(r); }
-function alDeshacer(r){ if(API.alDeshacer) API.alDeshacer(r); }
+function alRegistrar(r){ if(!r.prueba&&API.alRegistrar) API.alRegistrar(r); }
+function alDeshacer(r){ if(!r.prueba&&API.alDeshacer) API.alDeshacer(r); }
 
 /* ═══════════════════════════════════════════════════════════════════════
    3. LÓGICA (no necesitas tocar)
@@ -984,6 +984,8 @@ const phHTML = (f, cls) => '<div class="ph ' + (cls || '') + '" style="--h:' + h
 
 /* ---------- estado ---------- */
 const S = {
+  prueba:false,   // MODO PRUEBA: nada se guarda ni mueve inventario (para practicar / capacitar)
+
   screen:'main', op:opInicial(LSget('op', '')), sound:LSget('sound', true), size:LSget('size', 'n'), zones:false, fichas:{}, listaIds:null, regs:[], imp:(['no','usb'].indexOf(LSget('imp', 'nav')) >= 0 ? LSget('imp', 'nav') : 'nav'),
   pid:null, qty:0, mode:'preload', buf:'', modo:'ref', etqOv:null, guard:null, kbd:false, undo:null, ultima:LSget('ultima', {}), fd:null, filtroFalta:false, lt:new Set(), ready:false
 };
@@ -1004,7 +1006,7 @@ function renderTop(){
   const imp = S.imp === 'usb' ? (U.estado === 'listo' ? {cls:'ok', txt:'Cable conectado'} : {cls:'wn', txt:'Cable sin conectar'}) : S.imp === 'nav' ? {cls:'ok', txt:'Imprime etiquetas'} : {cls:'wn', txt:'Sin imprimir'};
   const printer = imp.act ? '<button class="stat ' + imp.cls + '" data-act="' + imp.act + '">' + ic('printer', 22) + ' ' + imp.txt + '</button>' : '<button class="stat ' + imp.cls + '" data-act="usb-menu">' + ic('printer', 22) + ' ' + imp.txt + '</button>';
   t.innerHTML = '<div class="ops">' + OPERADORES.map(o => BLOQUEADAS.indexOf(o) >= 0 ? '<button class="btn bloq" data-act="bloq" data-v="' + esc(o) + '">🔒 ' + esc(o) + '</button>' : '<button class="btn ' + (S.op === o ? 'on' : '') + '" data-act="op" data-v="' + esc(o) + '">' + esc(o) + '</button>').join('') + '</div>' +
-    '<button class="btn" data-act="go" data-v="hoy">Hoy (' + regsHoy().length + ')</button>' + printer + '<button class="btn" data-act="menu" aria-label="Opciones">' + ic('gear', 26) + '</button>';
+    (S.prueba ? '<button class="stat wn" data-act="menu">🧪 MODO PRUEBA</button>' : '') + '<button class="btn" data-act="go" data-v="hoy">Hoy (' + regsHoy().length + ')</button>' + printer + '<button class="btn" data-act="menu" aria-label="Opciones">' + ic('gear', 26) + '</button>';
   layout();
 }
 function render(){
@@ -1106,7 +1108,7 @@ function registrar(){
   S.guard = null;
   const now = new Date(), vida = tieneVida(f), dias = vida ? f.vida[S.modo] : 0, vence = vida ? venceDe(now, dias) : null, etq = S.etqOv != null ? S.etqOv : etqOf(f, S.qty);
   const r = {id:uid(), pid:f.id, nombre:f.nombre, unidad:f.unidad, presentacion:f.presentacion, cant:S.qty, cpe:S.etqOv != null ? round2(S.qty / etq) : (f.por_etiqueta > 0 ? f.por_etiqueta : 0), batches:round2(S.qty / f.batch), modo:S.modo, ts:now.getTime(),
-             vence:vence ? vence.getTime() : 0, dias:dias, lote:nextLote(f, now), etq:vida ? etq : 0, op:S.op, anulado:false, impresa:false};
+             vence:vence ? vence.getTime() : 0, dias:dias, lote:nextLote(f, now), etq:vida ? etq : 0, op:S.op, anulado:false, impresa:false, prueba:!!S.prueba};
   S.regs.unshift(r);
   Promise.resolve().then(() => STORE.guardarRegistro(r)).catch(err => { console.error(err); snd('err'); toast('No se pudo guardar'); });
   S.ultima[f.id] = S.qty; LSset('ultima', S.ultima); S.undo = r;
@@ -1146,11 +1148,11 @@ const lbDIAS = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'], lbMESES = ['en
 const lbLimpiar = t => String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[\^~\\"]/g, '').replace(/[^\x20-\x7E]/g, '?').trim();
 const lbFecha = (ms, hora) => { const d = new Date(ms); return lbDIAS[d.getDay()] + ' ' + d.getDate() + ' ' + lbMESES[d.getMonth()] + (hora ? ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : ''); };
 const lbNum = n => String(Math.round(Number(n) * 100) / 100).replace('.', ',');
-const lbDeReg = r => ({tipo:'etiqueta', producto:r.nombre, cantidad:qEtq(r), unidad:r.unidad, elaboradoMs:r.ts, venceMs:r.vence, dias:r.dias, conservacion:MODOS[r.modo] || '', lote:r.lote, operador:r.op, copias:r.etq});
+const lbDeReg = r => ({tipo:'etiqueta', producto:r.nombre, cantidad:qEtq(r), unidad:r.unidad, elaboradoMs:r.ts, venceMs:r.vence, dias:r.dias, conservacion:MODOS[r.modo] || '', lote:r.lote, operador:r.op, copias:r.etq, prueba:!!r.prueba});
 function lbDatos(j){
   return {titulo:lbLimpiar(j.tipo === 'prueba_impresora' ? 'PRUEBA DE IMPRESORA' : j.producto), cantidad:lbLimpiar(lbNum(j.cantidad) + ' ' + (j.unidad || '')), elaborado:'Elab: ' + lbFecha(j.elaboradoMs, true),
     vence:'VENCE: ' + lbFecha(j.venceMs, (j.dias == null ? 99 : j.dias) <= AVISO_DIAS_ROJO), pie:lbLimpiar(j.lote || ''), pie2:lbLimpiar((j.conservacion || '') + ' ' + (j.operador ? '- ' + String(j.operador).charAt(0) + '.' : '')),
-    lote:lbLimpiar(j.lote || ''), copias:Math.max(1, Math.min(99, parseInt(j.copias, 10) || 1)), prueba:j.tipo === 'prueba_impresora'};
+    lote:lbLimpiar(j.lote || ''), copias:Math.max(1, Math.min(99, parseInt(j.copias, 10) || 1)), prueba:j.tipo === 'prueba_impresora' || !!j.prueba};
 }
 function lbZPL(j, cfg){
   const e = lbDatos(j), dots = mm => Math.round(mm * cfg.dpi / 25.4), W = dots(cfg.ancho_mm), H = dots(cfg.alto_mm), m = dots(2.5);
@@ -1381,6 +1383,7 @@ function openMenu(){
     '<button class="btn pri" data-act="adm" data-v="fichas">Fichas de producto</button>' +
     '<button class="btn pri" data-act="usb-menu">' + ic('printer', 22) + ' Etiquetas e impresora</button>' +
     '<div class="mu small">Ajustes de la pantalla</div>' +
+    '<button class="btn sw ' + (S.prueba ? 'wnb' : '') + '" data-act="opt" data-k="prueba"><span>Modo prueba (no guarda nada)</span><b>' + (S.prueba ? 'Sí' : 'No') + '</b></button>' +
     '<button class="btn sw ' + (S.sound ? 'on' : '') + '" data-act="opt" data-k="sound"><span>Sonido</span><b>' + (S.sound ? 'Sí' : 'No') + '</b></button>' +
     '<button class="btn sw ' + (S.size === 'g' ? 'on' : '') + '" data-act="opt" data-k="size"><span>Botones grandes (+20 %)</span><b>' + (S.size === 'g' ? 'Sí' : 'No') + '</b></button>' +
     '<button class="btn" data-act="mclose">Cerrar</button>', 'wide');
@@ -1431,7 +1434,7 @@ function onClick(e){
     case 'menu': openMenu(); break;
     case 'mclose': closeModal(); break;
     case 'adm': pedirCodigo(() => go('fichas')); break;
-    case 'opt': { const k = d.k; if(k === 'sound'){ S.sound = !S.sound; LSset('sound', S.sound); } else if(k === 'size'){ S.size = S.size === 'g' ? 'n' : 'g'; LSset('size', S.size); layout(); } else if(k === 'zones'){ S.zones = !S.zones; layout(); } openMenu(); break; }
+    case 'opt': { const k = d.k; if(k === 'sound'){ S.sound = !S.sound; LSset('sound', S.sound); } else if(k === 'size'){ S.size = S.size === 'g' ? 'n' : 'g'; LSset('size', S.size); layout(); } else if(k === 'prueba'){ const cambiar = () => { S.prueba = !S.prueba; S.regs = S.regs.filter(x => !x.prueba); toast(S.prueba ? 'Modo prueba ACTIVO: nada se guarda' : 'Modo prueba apagado'); renderTop(); openMenu(); }; if(S.prueba) cambiar(); else pedirCodigo(cambiar); break; } else if(k === 'zones'){ S.zones = !S.zones; layout(); } openMenu(); break; }
     case 'probar-impresora': probarImpresora(); break;
     case 'usb-menu': pedirCodigo(openImpresora); break;
     case 'imp-modo': S.imp = d.v; LSset('imp', S.imp); if(S.imp === 'usb' && U.estado !== 'listo') usbConectar(false).then(() => { renderTop(); openImpresora(); }); renderTop(); openImpresora(); break;
@@ -1471,7 +1474,7 @@ window.PRODREG = {
     API = o.api || {}; CODIGO_ADMIN = o.codigo || 0; BLOQUEADAS = o.bloqueadas || []; if(BLOQUEADAS.indexOf(S.op) >= 0) S.op = OPERADORES.filter(x => BLOQUEADAS.indexOf(x) < 0)[0] || S.op; CATALOGO_TEXTO = o.catalogo || '';
     leerCatalogo(); S.ready = true; S.screen = 'main'; render(); renderTop(); if(!S.usbIni){ S.usbIni = true; usbIniciar(); }
   },
-  setRegistros(arr){ S.regs = (arr || []).sort((a, b) => b.ts - a.ts); renderTop(); if(S.screen === 'hoy') render(); },
+  setRegistros(arr){ S.regs = (arr || []).concat(S.regs.filter(x => x.prueba)).sort((a, b) => b.ts - a.ts); renderTop(); if(S.screen === 'hoy') render(); },
   setFichas(obj){ S.fichas = obj || {}; if(S.screen === 'main'){ renderGrid(); renderPanel(); } else if(S.screen === 'fichas') render(); },
   productos(estacion){ return PROD_ALL.filter(p => (estacionDe(estacion).secciones.indexOf(p.seccion) >= 0)).map(p => { const f = fichaDe(p.id); return {id:p.id, nombre:f.nombre, unidad:f.unidad, presentacion:f.presentacion, foto:f.foto}; }); },
   mostrar(){ layout(); refrescar(); },
@@ -1610,8 +1613,8 @@ const ESTACIONES = {
 };
 // Módulos habilitados en esta etapa de prueba. Los demás se ven con 🔒 para que el equipo sepa que vienen, pero no se pueden abrir.
 // Para habilitar uno más, agrégalo a esta lista.
-const MODULOS_ACTIVOS=['prod','bajas','pedido','porrecibir'];
-const TABS=['check','prod','bajas','pedido','porrecibir','inventario','equipo','tips','guia'];   // orden de los módulos
+const MODULOS_ACTIVOS=['clock','prod','bajas','pedido','porrecibir'];
+const TABS=['clock','check','prod','bajas','pedido','porrecibir','inventario','equipo','tips','guia'];   // orden de los módulos
 const AREAS_EST=['Panadería producción','Panadería','Cafetería','Cocina'];
 const estMod={check:'',bajas:'',equipo:''};      // área elegida dentro de cada módulo
 const estKey=a=>sinAc(String(a||'')).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'general';
@@ -1649,6 +1652,7 @@ function showToast(m){const t=document.getElementById('toast');t.textContent=m;t
 function openPhoto(url){window.open(url,'_blank','noopener');}
 
 function showPage(id){
+  if(id==='clock'){abrirClock();return;}   // Turno: entrada/salida con código, en pantalla completa
   if(!MODULOS_ACTIVOS.includes(id)){showToast('🔒 '+TAB_LABEL[id].replace(/^\S+\s/,'')+' está en desarrollo. Pronto estará disponible.');vib([40,30,40]);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const page=document.getElementById('page-'+id);
@@ -2871,7 +2875,7 @@ function entrarDirecto(){
   const foot=document.getElementById('foot-ubicacion');
   foot.textContent=`📍 ${dispositivo.local}`;
   foot.style.display='flex';
-  showPage(TABS.find(t=>MODULOS_ACTIVOS.includes(t))||TABS[0]);
+  showPage(TABS.find(t=>t!=='clock'&&MODULOS_ACTIVOS.includes(t))||TABS[0]);
   if(ESTACIONES[estMod.check].checklist) clIniciar(); else clVacio();
   iniciarListeners();
 }
