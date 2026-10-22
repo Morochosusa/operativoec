@@ -381,6 +381,7 @@
   #pr-root.pr-land #pr-panel{border-top:0;border-left:1px solid var(--bd);max-height:none}
   #pr-root .card{position:relative;display:flex;flex-direction:column;text-align:left;padding:8px 8px 13px;gap:6px;background:var(--s1);border:3px solid var(--bd);border-radius:16px;font:inherit;color:inherit;cursor:pointer;min-height:calc(var(--u)*150px);margin:0}
   #pr-root .card:active{transform:scale(.98)}
+  #pr-root .card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
   #pr-root .card.sel{border-color:var(--ac);background:var(--acbg)}
   #pr-root .card.falta .nm::after{content:" ⚠";color:var(--wn)}
   #pr-root .tick{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--ac);color:var(--acfg);display:none;align-items:center;justify-content:center}
@@ -409,8 +410,9 @@
   #pr-root.pr-land .kbtog{display:none}
   #pr-root .modos{display:flex;gap:8px}
   #pr-root .modos .btn{flex:1;flex-direction:column;gap:2px}
-  #pr-root .chipv{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;font-weight:800;font-size:20px;background:var(--okbg);color:var(--ok)}
-  #pr-root .chipv small{font-weight:600;font-size:14px}
+  #pr-root .pnum{font-weight:900;color:var(--ac)}
+  #pr-root .chipv{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:12px;font-weight:800;font-size:16px;background:var(--okbg);color:var(--ok)}
+  #pr-root .chipv small{font-weight:600;font-size:12px}
   #pr-root .chipv.wn{background:var(--wnbg);color:var(--wn)}
   #pr-root .chipv.er{background:var(--erbg);color:var(--er)}
   #pr-root .etq{display:flex;align-items:center;gap:8px;font-weight:700}
@@ -427,6 +429,21 @@
   #pr-root.pr-land .pc2{grid-column:2;grid-row:1}
   #pr-root.pr-land .regwrap{grid-column:2;grid-row:2}
   #pr-root.pr-land .lotetx{display:block}
+  /* Tablet horizontal de poca altura (p. ej. 23×15 cm): todo el panel cabe sin desplazarse */
+  #pr-root.pr-short #pr-panel{padding:8px;gap:6px;overflow:hidden}
+  #pr-root.pr-short .pcols{gap:6px 10px}
+  #pr-root.pr-short .pc1,#pr-root.pr-short .pc2{gap:5px}
+  #pr-root.pr-short .phead{gap:8px} #pr-root.pr-short .phead .ph.sm{width:36px;height:36px;font-size:14px;border-radius:8px} #pr-root.pr-short .phead .nm{font-size:16px} #pr-root.pr-short .phead .un{font-size:12px}
+  #pr-root.pr-short .pq .n{font-size:44px} #pr-root.pr-short .pq .u{font-size:16px}
+  #pr-root.pr-short .eq{font-size:12px;min-height:12px;margin-top:-4px}
+  #pr-root.pr-short .quick{gap:6px} #pr-root.pr-short .quick .btn{min-height:40px;font-size:17px;padding:4px}
+  #pr-root.pr-short .kp{gap:5px} #pr-root.pr-short .key{min-height:40px;font-size:22px;padding:2px}
+  #pr-root.pr-short .modos .btn{min-height:40px;font-size:14px}
+  #pr-root.pr-short .etq .btn{min-height:38px;min-width:42px;padding:2px 8px} #pr-root.pr-short .etq{gap:6px;font-size:15px}
+  #pr-root.pr-short .vrow{gap:6px}
+  #pr-root.pr-short .label.mini .l4{font-size:17px;white-space:nowrap} #pr-root.pr-short .label.mini .l1{font-size:15px}
+  #pr-root.pr-short .regwrap{position:static;margin:0;padding:6px 0 0;gap:5px}
+  #pr-root.pr-short .regbtn{min-height:54px;font-size:24px;border-radius:14px}
   #pr-root .regbtn{width:100%;min-height:calc(var(--u)*84px);font-size:28px;border-radius:18px}
   #pr-root .screen{flex:1;min-height:0;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
   #pr-root .subbar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0}
@@ -890,7 +907,8 @@ const LSset = (k, v) => { try { localStorage.setItem(PREFIJO + k, JSON.stringify
 const STORE = {
   guardarRegistro(r){ if(r.prueba) return; if(API.guardarRegistro) API.guardarRegistro(r); },
   actualizarRegistro(r){ if(r.prueba) return; if(API.actualizarRegistro) API.actualizarRegistro(r); },
-  guardarFicha(f){ if(API.guardarFicha) API.guardarFicha(f); }
+  guardarFicha(f){ if(API.guardarFicha) API.guardarFicha(f); },
+  guardarOrden(op, ids){ if(API.guardarOrden) API.guardarOrden(op, ids); }
 };
 function alRegistrar(r){ if(!r.prueba&&API.alRegistrar) API.alRegistrar(r); }
 function alDeshacer(r){ if(!r.prueba&&API.alDeshacer) API.alDeshacer(r); }
@@ -974,9 +992,8 @@ const modosDe = f => ['ref', 'con', 'amb'].filter(m => f.vida[m] > 0);
 const venceDe = (from, dias) => { const d = new Date(from); d.setDate(d.getDate() + dias); return d; };
 function quickFor(f){
   const b = [];
-  if(f.solo_batch){ [1, 2, 3, 4].forEach(n => b.push({t:'×' + n, set:n})); b.push({t:'+1 batch', add:f.batch}); return b; }
-  (f.decimales ? [0.5, 1, 5] : [1, 5, 10]).forEach(n => b.push({t:'+' + fmt(n), add:n}));
-  b.push({t:'+1 batch', add:f.batch}); return b;
+  if(f.solo_batch){ b.push({t:'+1 batch', add:f.batch}); return b; }   // solo múltiplos de batch
+  b.push({t:'+1', add:1}, {t:'+1 batch', add:f.batch}); return b;
 }
 const initials = n => n.split(' ').slice(0, 2).map(w => w.charAt(0)).join('').toUpperCase();
 const hueDe = pid => { let h = 0; for(let i = 0; i < pid.length; i++) h = (h * 31 + pid.charCodeAt(i)) % 360; return h; };
@@ -984,20 +1001,26 @@ const phHTML = (f, cls) => '<div class="ph ' + (cls || '') + '" style="--h:' + h
 
 /* ---------- estado ---------- */
 const S = {
+  orden:{},   // orden personalizado de productos por área {op:[ids]}
   prueba:false,   // MODO PRUEBA: nada se guarda ni mueve inventario (para practicar / capacitar)
 
   screen:'main', op:opInicial(LSget('op', '')), sound:LSget('sound', true), size:LSget('size', 'n'), zones:false, fichas:{}, listaIds:null, regs:[], imp:(['no','usb'].indexOf(LSget('imp', 'nav')) >= 0 ? LSget('imp', 'nav') : 'nav'),
   pid:null, qty:0, mode:'preload', buf:'', modo:'ref', etqOv:null, guard:null, kbd:false, undo:null, ultima:LSget('ultima', {}), fd:null, filtroFalta:false, lt:new Set(), ready:false
 };
 const cur = () => S.pid ? fichaDe(S.pid) : null;
-const visibles = () => { const e = estacionDe(S.op); return PROD_ALL.filter(p => (!S.listaIds || S.listaIds.indexOf(p.id) >= 0) && e.secciones.indexOf(p.seccion) >= 0); };
+const visibles = () => {
+  const e = estacionDe(S.op), base = PROD_ALL.filter(p => (!S.listaIds || S.listaIds.indexOf(p.id) >= 0) && e.secciones.indexOf(p.seccion) >= 0);
+  const ord = (S.orden && S.orden[S.op]) || [], secs = []; base.forEach(p => { if(secs.indexOf(p.seccion) < 0) secs.push(p.seccion); });
+  const ix = id => { const i = ord.indexOf(id); return i < 0 ? 99999 : i; };
+  return base.map((p, i) => ({p:p, i:i})).sort((a, b) => (secs.indexOf(a.p.seccion) - secs.indexOf(b.p.seccion)) || (ix(a.p.id) - ix(b.p.id)) || (a.i - b.i)).map(x => x.p);
+};
 const regsHoy = () => S.regs.filter(r => sameDay(r.ts) && !r.anulado);
 
 /* ---------- pantalla ---------- */
 function layout(){
   const r = R(); if(!r) return;
   const w = r.clientWidth, h = r.clientHeight;
-  r.classList.toggle('pr-land', w >= 860 && w > h); r.classList.toggle('pr-kbd', S.kbd); r.classList.toggle('pr-zones', S.zones);
+  r.classList.toggle('pr-land', w >= 860 && w > h); r.classList.toggle('pr-short', w >= 860 && w > h && h < 620); r.classList.toggle('pr-kbd', S.kbd); r.classList.toggle('pr-zones', S.zones);
   r.style.setProperty('--u', S.size === 'g' ? 1.2 : 1); r.style.setProperty('--pr-ph', Math.round(h * 0.62) + 'px');
   r.style.setProperty('--hh', ($('#pr-top').offsetHeight) + 'px');
 }
@@ -1023,11 +1046,43 @@ function renderGrid(){
   const g = $('#pr-grid'); if(!g) return; const prods = visibles();
   if(!prods.length){ g.innerHTML = '<div class="hint"><div class="big">No hay productos</div><div class="mu">Los productos de esta área se irán agregando pronto</div></div>'; return; }
   let secPrev = '';
-  g.innerHTML = prods.map(p => {
+  g.innerHTML = prods.map((p, ix) => {
     const f = fichaDe(p.id), hd = (estacionDe(S.op).secciones.length > 1 && p.seccion !== secPrev) ? '<div class="gsec">' + esc(SECCION_NOMBRE[p.seccion] || p.seccion) + '</div>' : ''; secPrev = p.seccion;
-    return hd + '<button class="card' + (S.pid === p.id ? ' sel' : '') + (tieneVida(f) ? '' : ' falta') + '" data-act="sel" data-pid="' + p.id + '"><span class="tick">' + ic('check', 20) + '</span>' + phHTML(f) + '<div class="nm">' + esc(f.nombre) + '</div><div class="un">' + esc(f.presentacion) + '</div></button>';
+    return hd + '<button class="card' + (S.pid === p.id ? ' sel' : '') + (tieneVida(f) ? '' : ' falta') + '" data-act="sel" data-pid="' + p.id + '"><span class="tick">' + ic('check', 20) + '</span>' + phHTML(f) + '<div class="nm"><span class="pnum">' + (ix + 1) + '.</span> ' + esc(f.nombre) + '</div><div class="un">' + esc(f.presentacion) + '</div></button>';
   }).join('');
 }
+/* ---------- ordenar productos: mantener presionado un producto → mover ---------- */
+function abrirMover(pid){
+  const f = fichaDe(pid); if(!f) return; const n = visibles().findIndex(p => p.id === pid) + 1;
+  openModal('<div class="mt">Mover: ' + n + '. ' + esc(f.nombre) + '</div>' +
+    '<button class="btn pri" data-act="mv" data-d="up" data-pid="' + pid + '">⬆ Más arriba</button>' +
+    '<div class="modos"><button class="btn pri" data-act="mv" data-d="left" data-pid="' + pid + '">⬅ Izquierda</button><button class="btn pri" data-act="mv" data-d="right" data-pid="' + pid + '">Derecha ➡</button></div>' +
+    '<button class="btn pri" data-act="mv" data-d="down" data-pid="' + pid + '">⬇ Más abajo</button>' +
+    '<button class="btn" data-act="mclose">Listo</button>');
+}
+function mover(pid, dir){
+  const list = visibles(), i = list.findIndex(p => p.id === pid); if(i < 0) return;
+  const sec = list[i].seccion, idxs = []; list.forEach((p, k) => { if(p.seccion === sec) idxs.push(k); });
+  const pos = idxs.indexOf(i), n = idxs.length; let cols = 1;
+  const g = document.getElementById('pr-grid');
+  if(g){ const cs = Array.prototype.slice.call(g.querySelectorAll('.card')).filter(c => { const q = PROD_ALL.filter(x => x.id === c.dataset.pid)[0]; return q && q.seccion === sec; }); if(cs.length){ const top = cs[0].offsetTop; cols = Math.max(1, cs.filter(c => c.offsetTop === top).length); } }
+  let np = pos; if(dir === 'left') np = pos - 1; else if(dir === 'right') np = pos + 1; else if(dir === 'up') np = pos - cols; else if(dir === 'down') np = pos + cols;
+  np = Math.max(0, Math.min(n - 1, np)); if(np === pos){ snd('warn'); toast('Ya no se puede mover más en esa dirección'); return; }
+  const ids = idxs.map(k => list[k].id); ids.splice(pos, 1); ids.splice(np, 0, pid);
+  const nuevo = list.map(p => p.id); idxs.forEach((k, j) => { nuevo[k] = ids[j]; });
+  S.orden[S.op] = nuevo; STORE.guardarOrden(S.op, nuevo); renderGrid(); abrirMover(pid);
+}
+(function(){
+  let t = null, sx = 0, sy = 0; const cancel = () => { clearTimeout(t); t = null; };
+  document.addEventListener('pointerdown', e => {
+    const c = e.target.closest && e.target.closest('#pr-reg .card[data-act="sel"]'); if(!c || S.screen !== 'main') return;
+    sx = e.clientX; sy = e.clientY; cancel();
+    t = setTimeout(() => { t = null; S.lpAt = Date.now(); const pid = c.dataset.pid, ir = () => abrirMover(pid); if(S.ordenOk) ir(); else pedirCodigo(() => { S.ordenOk = true; ir(); }); }, 550);
+  }, true);
+  ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, cancel, true));
+  document.addEventListener('pointermove', e => { if(t && (Math.abs(e.clientX - sx) > 12 || Math.abs(e.clientY - sy) > 12)) cancel(); }, true);
+  document.addEventListener('contextmenu', e => { if(e.target.closest && e.target.closest('#pr-reg .card')) e.preventDefault(); }, true);
+})();
 function nextLote(f, now){
   const pref = 'L-' + String(now.getFullYear()).slice(2) + pad(now.getMonth() + 1) + pad(now.getDate()) + '-' + f.codigo + '-';
   return pref + pad(S.regs.filter(r => (r.lote || '').indexOf(pref) === 0).length + 1);
@@ -1060,7 +1115,7 @@ function renderPanel(){
   const pseudo = {nombre:f.nombre, unidad:f.unidad, cant:S.qty, cpe:S.etqOv != null ? round2(S.qty / etq) : (f.por_etiqueta > 0 ? f.por_etiqueta : 0), ts:now.getTime(), vence:vence ? vence.getTime() : 0, dias:dias, lote:lote, modo:S.modo, op:S.op};
   const cant = S.mode === 'typing' ? (S.buf ? fmt(parseFloat(S.buf)) + (S.buf.slice(-1) === '.' ? ',' : '') : '0') : fmt(S.qty);
   const chip = vida
-    ? '<div class="chipv ' + cls + '">' + ic('clock', 26) + '<span>Vence ' + fd(vence, dias <= AVISO_DIAS_ROJO) + '<br><small>' + dias + ' días · ' + MODOS[S.modo] + '</small></span></div>'
+    ? '<div class="chipv ' + cls + '">' + ic('clock', 26) + '<span>Vence ' + fd(vence, dias <= AVISO_DIAS_ROJO) + ' <small>· ' + dias + ' d · ' + MODOS[S.modo] + '</small></span></div>'
     : '<button class="chipv wn" style="border:0;font-family:inherit;text-align:left;cursor:pointer" data-act="ficha" data-pid="' + f.id + '">' + ic('clock', 26) + '<span>Falta la vida útil<br><small>Toca para configurar la ficha (sin etiqueta)</small></span></button>';
   el.innerHTML = '<div class="pcols"><div class="pc1">' +
       '<div class="phead">' + phHTML(f, 'sm') + '<div><div class="nm">' + esc(f.nombre) + '</div><div class="un">' + esc(f.unidad) + ' · 1 batch = ' + fmt(f.batch) + '</div></div></div>' +
@@ -1072,8 +1127,7 @@ function renderPanel(){
       (modos.length > 1 ? '<div class="modos">' + modos.map(m => '<button class="btn ' + (S.modo === m ? 'on' : '') + '" data-act="modo" data-v="' + m + '"><span>' + MODOS[m] + '</span><span class="small">' + f.vida[m] + ' días</span></button>').join('') + '</div>' : '') +
       (vida ? '<div class="only-land"><div class="mu small" style="margin-bottom:4px">Así saldrá la etiqueta</div>' + labelHTML(pseudo, true) + '</div>' : '') + '</div>' +
     '<div class="regwrap"><div class="vrow">' + chip + (vida ? '<div class="etq"><button class="btn" data-act="etq" data-d="-1" aria-label="Menos etiquetas">−</button><span>' + etq + ' etiq.</span><button class="btn" data-act="etq" data-d="1" aria-label="Más etiquetas">+</button></div>' : '') + '</div>' +
-      '<div class="mu small lotetx">Lote ' + lote + '</div>' +
-      (f.por_etiqueta > 0 && S.qty > 0 ? '<div class="mu small">' + etq + ' paquete' + (etq === 1 ? '' : 's') + ' de ' + fmt(f.por_etiqueta) + ' ' + esc(f.unidad) + ' · 1 etiqueta cada uno' + (S.etqOv == null && !eq(S.qty % f.por_etiqueta, 0) ? ' · sobran ' + fmt(round2(S.qty % f.por_etiqueta)) + ' (último paquete incompleto)' : '') + '. Se registran ' + fmt(S.qty) + ' en total.</div>' : '') +
+      (f.por_etiqueta > 0 && S.qty > 0 && S.etqOv == null && !eq(S.qty % f.por_etiqueta, 0) ? '<div class="mu small">Sobran ' + fmt(round2(S.qty % f.por_etiqueta)) + ' (último paquete incompleto)</div>' : '') +
       '<button class="btn regbtn ' + (g ? 'wnb' : 'okb') + '" data-act="reg">' + (g ? '' : ic('check', 30) + ' ') + regTxt + '</button></div></div>';
 }
 const popQty = () => { const q = $('#pr-pq'); if(q){ q.classList.remove('pop'); void q.offsetWidth; q.classList.add('pop'); } };
@@ -1154,9 +1208,18 @@ function lbDatos(j){
     vence:'VENCE: ' + lbFecha(j.venceMs, (j.dias == null ? 99 : j.dias) <= AVISO_DIAS_ROJO), pie:lbLimpiar(j.lote || ''), pie2:lbLimpiar((j.conservacion || '') + ' ' + (j.operador ? '- ' + String(j.operador).charAt(0) + '.' : '')),
     lote:lbLimpiar(j.lote || ''), copias:Math.max(1, Math.min(99, parseInt(j.copias, 10) || 1)), prueba:j.tipo === 'prueba_impresora' || !!j.prueba};
 }
+/* QR dibujado con rectángulos (funciona en cualquier impresora, aunque no traiga comando QR propio) */
+function qrMods(texto){
+  try {
+    const q = qrcode(0, 'M'); q.addData(String(texto || 'SIN-LOTE')); q.make(); const n = q.getModuleCount(), rows = [];
+    for(let y = 0; y < n; y++){ const runs = []; let x = 0; while(x < n){ if(q.isDark(y, x)){ const s0 = x; while(x < n && q.isDark(y, x)) x++; runs.push([s0, x - s0]); } else x++; } rows.push(runs); }
+    return {n:n, rows:rows};
+  } catch(e){ return null; }
+}
+function qrDims(texto, W, H){ const Q = qrMods(texto), side = Math.min(0.45 * H, 0.30 * W); if(!Q) return {Q:null, mod:0, px:0}; const mod = Math.max(2, Math.floor(side / Q.n)); return {Q:Q, mod:mod, px:Q.n * mod}; }
 function lbZPL(j, cfg){
   const e = lbDatos(j), dots = mm => Math.round(mm * cfg.dpi / 25.4), W = dots(cfg.ancho_mm), H = dots(cfg.alto_mm), m = dots(2.5);
-  const mag = Math.max(2, Math.min(8, Math.floor(0.30 * H / 25))), qr = 25 * mag, xQR = W - m - qr, anchoTexto = xQR - m - 8;
+  const QD = qrDims(e.lote, W, H), qr = QD.px, xQR = W - m - qr, anchoTexto = xQR - m - 8;
   const fT = Math.round(H * 0.10), fC = Math.round(H * 0.085), fP = Math.round(H * 0.058), fV = Math.min(Math.round(H * 0.15), Math.floor((W - 2 * m) / (e.vence.length * 0.55)));
   let y = m; const L = [];
   if(cfg.oscuridad != null) L.push('~SD' + Math.max(0, Math.min(30, cfg.oscuridad)));
@@ -1166,7 +1229,8 @@ function lbZPL(j, cfg){
   L.push('^FO' + m + ',' + y + '^A0N,' + fC + ',' + fC + '^FD' + e.cantidad + '^FS'); y += fC + 6;
   L.push('^FO' + m + ',' + y + '^A0N,' + fP + ',' + fP + '^FD' + e.elaborado + '^FS'); y += fP + 8;
   const yV = Math.max(y + 6, m + qr + 8);
-  L.push('^FO' + xQR + ',' + m + '^BQN,2,' + mag + '^FDMA,' + (e.lote || 'SIN-LOTE') + '^FS', '^FO' + m + ',' + (yV - 6) + '^GB' + (W - 2 * m) + ',3,3^FS', '^FO' + m + ',' + yV + '^A0N,' + fV + ',' + fV + '^FD' + e.vence + '^FS');
+  if(QD.Q) QD.Q.rows.forEach((runs, ry) => runs.forEach(r => L.push('^FO' + (xQR + r[0] * QD.mod) + ',' + (m + ry * QD.mod) + '^GB' + (r[1] * QD.mod) + ',' + QD.mod + ',' + QD.mod + '^FS')));
+  L.push('^FO' + m + ',' + (yV - 6) + '^GB' + (W - 2 * m) + ',3,3^FS', '^FO' + m + ',' + yV + '^A0N,' + fV + ',' + fV + '^FD' + e.vence + '^FS');
   const yP = Math.min(H - m - fP * 2 - 4, yV + fV + 10);
   L.push('^FO' + m + ',' + yP + '^A0N,' + fP + ',' + fP + '^FD' + e.pie + '^FS', '^FO' + m + ',' + (yP + fP + 4) + '^A0N,' + fP + ',' + fP + '^FD' + e.pie2 + '^FS', '^PQ' + e.copias + ',0,1,N', '^XZ');
   return L.join('\n') + '\n';
@@ -1179,7 +1243,7 @@ function lbEPL(j, cfg){
   L.push('A' + m + ',' + y + ',0,3,1,1,N,"' + e.cantidad + '"'); y += 34;
   L.push('A' + m + ',' + y + ',0,2,1,1,N,"' + e.elaborado + '"'); y += 26;
   L.push('A' + m + ',' + y + ',0,4,1,1,N,"' + e.vence + '"'); y += 46;
-  L.push('B' + m + ',' + y + ',0,1,2,4,50,N,"' + (e.lote || 'SIN-LOTE') + '"'); y += 66;
+  const QD = qrDims(e.lote, W, H); if(QD.Q) QD.Q.rows.forEach((runs, ry) => runs.forEach(r => L.push('LO' + (W - m - QD.px + r[0] * QD.mod) + ',' + (m + ry * QD.mod) + ',' + (r[1] * QD.mod) + ',' + QD.mod)));
   L.push('A' + m + ',' + y + ',0,2,1,1,N,"' + e.pie2 + '"'); L.push('P' + e.copias); return L.join('\n') + '\n';
 }
 function lbTSPL(j, cfg){
@@ -1189,7 +1253,7 @@ function lbTSPL(j, cfg){
   L.push('TEXT ' + m + ',' + y + ',"3",0,1,1,"' + q(e.titulo.slice(0, 20)) + '"'); y += 34;
   L.push('TEXT ' + m + ',' + y + ',"3",0,1,1,"' + q(e.cantidad) + '"'); y += 34;
   L.push('TEXT ' + m + ',' + y + ',"2",0,1,1,"' + q(e.elaborado) + '"'); y += 28;
-  L.push('QRCODE ' + (W - m - 29 * qrc) + ',' + m + ',L,' + qrc + ',A,0,"' + q(e.lote || 'SIN-LOTE') + '"');
+  const QD = qrDims(e.lote, W, H); if(QD.Q) QD.Q.rows.forEach((runs, ry) => runs.forEach(r => L.push('BAR ' + (W - m - QD.px + r[0] * QD.mod) + ',' + (m + ry * QD.mod) + ',' + (r[1] * QD.mod) + ',' + QD.mod)));
   L.push('BAR ' + m + ',' + y + ',' + (W - 2 * m) + ',3'); y += 8;
   L.push('TEXT ' + m + ',' + y + ',"4",0,1,1,"' + q(e.vence) + '"'); y += 44;
   L.push('TEXT ' + m + ',' + y + ',"1",0,1,1,"' + q(e.pie) + '"'); y += 16;
@@ -1294,8 +1358,8 @@ function renderFichasList(){
     '<div class="sec"><div class="mu">' + esc(S.op) + ': cada producto necesita su vida útil para calcular el vencimiento y sacar la etiqueta. Faltan ' + falta + ' de ' + prods.length + '. Para ver los de otra estación, cámbiala en la pantalla de registro.</div>' +
     '<button class="btn ' + (S.filtroFalta ? 'on' : '') + '" data-act="ffalta">' + (S.filtroFalta ? 'Mostrando solo los que faltan' : 'Mostrar solo los que faltan') + '</button></div>' +
     '<div id="pr-grid" style="padding:0">' + lista.map(p => {
-      const f = fichaDe(p.id), ms = modosDe(f).map(m => MODOS[m].slice(0, 3) + ' ' + f.vida[m] + 'd').join(' · ') || 'Falta vida útil';
-      return '<button class="card' + (tieneVida(f) ? '' : ' falta') + '" data-act="ficha" data-pid="' + p.id + '">' + phHTML(f) + '<div class="nm">' + esc(f.nombre) + '</div><div class="un">' + esc(ms) + '</div></button>';
+      const f = fichaDe(p.id), num = prods.indexOf(p) + 1, ms = modosDe(f).map(m => MODOS[m].slice(0, 3) + ' ' + f.vida[m] + 'd').join(' · ') || 'Falta vida útil';
+      return '<button class="card' + (tieneVida(f) ? '' : ' falta') + '" data-act="ficha" data-pid="' + p.id + '">' + phHTML(f) + '<div class="nm"><span class="pnum">' + num + '.</span> ' + esc(f.nombre) + '</div><div class="un">' + esc(ms) + '</div></button>';
     }).join('') + '</div></div>';
 }
 function renderFichaEdit(){
@@ -1423,7 +1487,8 @@ function onClick(e){
     case 'bloq': toast('🔒 ' + d.v + ' está en desarrollo. Pronto estará disponible.'); break;
     case 'op': S.op = d.v; LSset('op', S.op); renderTop(); S.pid = null; if(S.screen === 'main'){ renderGrid(); renderPanel(); } break;
     case 'go': go(d.v); break;
-    case 'sel': selectProduct(d.pid); break;
+    case 'sel': if(Date.now() - (S.lpAt || 0) < 800) break; selectProduct(d.pid); break;
+    case 'mv': mover(d.pid, d.d); break;
     case 'key': panelKey(d.k); break;
     case 'quick': panelQuick(parseInt(d.i, 10)); break;
     case 'kbd': S.kbd = !S.kbd; layout(); renderPanel(); break;
@@ -1475,6 +1540,7 @@ window.PRODREG = {
     leerCatalogo(); S.ready = true; S.screen = 'main'; render(); renderTop(); if(!S.usbIni){ S.usbIni = true; usbIniciar(); }
   },
   setRegistros(arr){ S.regs = (arr || []).concat(S.regs.filter(x => x.prueba)).sort((a, b) => b.ts - a.ts); renderTop(); if(S.screen === 'hoy') render(); },
+  setOrden(obj){ S.orden = obj || {}; if(S.screen === 'main') renderGrid(); else if(S.screen === 'fichas') render(); },
   setFichas(obj){ S.fichas = obj || {}; if(S.screen === 'main'){ renderGrid(); renderPanel(); } else if(S.screen === 'fichas') render(); },
   productos(estacion){ return PROD_ALL.filter(p => (estacionDe(estacion).secciones.indexOf(p.seccion) >= 0)).map(p => { const f = fichaDe(p.id); return {id:p.id, nombre:f.nombre, unidad:f.unidad, presentacion:f.presentacion, foto:f.foto}; }); },
   mostrar(){ layout(); refrescar(); },
@@ -2852,8 +2918,10 @@ function iniciarProd(){
     guardarRegistro:r=>setDoc(doc(db,'registros_produccion',r.id),{...r,local:code,dia:getHoy(),area:r.op,fecha_registro:serverTimestamp()}).catch(e=>{console.error(e);showToast('❌ No se pudo guardar el registro');}),
     actualizarRegistro:r=>setDoc(doc(db,'registros_produccion',r.id),{anulado:!!r.anulado,impresa:!!r.impresa},{merge:true}).catch(e=>console.error(e)),
     guardarFicha:f=>setDoc(doc(db,'produccion_fichas',f.id),f).catch(e=>{console.error(e);showToast('❌ No se pudo guardar la ficha');}),
+    guardarOrden:(op,ids)=>setDoc(doc(db,'produccion_orden',`${code}__${estKey(op)}`),{local:code,op,ids,actualizado:serverTimestamp()}).catch(e=>{console.error(e);showToast('❌ No se pudo guardar el orden');}),
     alRegistrar:r=>stockProd(r,1),alDeshacer:r=>stockProd(r,-1)}});
   onSnapshot(collection(db,'produccion_fichas'),snap=>{const o={};snap.docs.forEach(d=>{o[d.id]=d.data();});PRODREG.setFichas(o);renderInv();},err=>console.error('fichas',err));
+  onSnapshot(query(collection(db,'produccion_orden'),where('local','==',code)),snap=>{const o={};snap.docs.forEach(d=>{const x=d.data();o[x.op]=x.ids||[];});PRODREG.setOrden(o);},err=>console.error('orden',err));
   suscribirRegistrosProd();
 }
 
