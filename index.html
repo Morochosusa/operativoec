@@ -323,6 +323,8 @@
   .ped-left .form-control{min-height:48px;border-radius:12px;background:#eceae2;border-color:#eceae2;margin-bottom:12px;}
   .pl-areas{background:#fff;border-radius:14px;overflow:hidden;}
   .parea{display:flex;align-items:center;gap:12px;width:100%;border:none;border-bottom:1px solid var(--bd);background:#fff;padding:12px;font-family:inherit;text-align:left;cursor:pointer;color:var(--black);min-height:72px;}
+  .parea-row{display:flex;align-items:center;background:#fff;border-bottom:1px solid var(--bd);} .parea-row .parea{border-bottom:none;flex:1;min-width:0;} .parea-row .pr-mv{padding:0 8px;} .parea-row .pr-mv button{width:44px;height:44px;}
+  .sec-ord{display:flex;align-items:center;justify-content:space-between;gap:8px;} .sec-ord .pr-mv button{width:44px;height:44px;background:#fff;}
   .parea:last-child{border-bottom:none;} .parea.act{background:var(--s2);}
   .pa-ic{font-size:34px;width:46px;text-align:center;flex-shrink:0;} .pa-tx{display:flex;flex-direction:column;} .pa-tx b{font-size:18px;font-weight:600;} .pa-tx small{font-size:14px;color:var(--mu);}
   .ped-right{min-width:0;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
@@ -2350,7 +2352,8 @@ const ordDe=p=>{const o=OVR[p.id];return o&&typeof o.orden==='number'?o.orden:p.
 function aplicarOvr(){CAT_TODOS=CAT_BASE.concat(propios()).map((p,_i)=>{p={...p,_i};const o=OVR[p.id]||{};const q={...p,nombre:o.nombre||p.nombre,cant:(o.cant>0?o.cant:p.cant),resto:(o.resto!==undefined?o.resto:p.resto),foto:o.foto||'',oculto:!!o.oculto,categoria:o.categoria||p.categoria,seccion:o.seccion||p.seccion};q.subcategoria=subDe(q.seccion);q.unidad_medida=unidadDe(q);return q;}).sort((a,b)=>ordDe(a)-ordDe(b)||a._i-b._i);CAT=CAT_TODOS.filter(p=>!p.oculto);}
 let CAT_TODOS=[];
 aplicarOvr();
-const AREAS=[['cocina','🍳 Cocina'],['cafetería','🧋 Cafetería'],['panadería producción','🥐 Panadería producción'],['limpieza','🧹 Limpieza']];
+const AREAS_BASE=[['cocina','🍳 Cocina'],['cafetería','🧋 Cafetería'],['panadería producción','🥐 Panadería producción'],['limpieza','🧹 Limpieza']];
+let AREAS=AREAS_BASE.slice();   // el orden lo define la manager (↕ Ordenar lista) y se guarda en Firestore: pedido_orden
 const AREA_DEF={'Cocina':'cocina','Panadería':'cafetería','Cafetería':'cafetería','Panadería producción':'panadería producción'};
 const sinAc=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 const enArea=(p,a)=>sinAc(p.categoria)===sinAc(a);
@@ -2366,6 +2369,7 @@ function iniciarCatalogo(){   // la lista base está en CATALOGO_TEXTO; aquí ll
     OVR={};snap.docs.forEach(d=>{OVR[d.id]=d.data();});
     aplicarOvr();renderPedido();renderInv();renderCfg();
   },err=>console.error('ajustes',err));
+  onSnapshot(doc(db,'pedido_orden',LOCAL_CODE[dispositivo.local]),d=>{aplicarOrdenListas(d&&typeof d.exists==='function'&&d.exists()?d.data():null);renderPedido();renderInv();renderCfg();},err=>console.error('pedido_orden',err));
 }
 // ⚙ Ajustes de productos: cambiar nombre y subir foto
 const CODIGO_MANAGER=4821;   // ← cambia aquí el código del manager (solo números, sin cero al inicio)
@@ -2430,6 +2434,30 @@ async function prodNuevoGuardar(){
   try{await setDoc(doc(db,'productos_ajustes',id),dato);}catch(e){console.error(e);delete OVR[id];aplicarOvr();renderPedido();renderInv();showToast('❌ No se pudo crear el producto');}
 }
 let pedOrd=false,ultMov=null;
+function aplicarOrdenListas(o){
+  const ra=(o&&o.areas)||[],rs=(o&&o.secciones)||[];
+  AREAS=AREAS_BASE.map((a,i)=>({a,i})).sort((x,y)=>{const ix=ra.indexOf(x.a[0]),iy=ra.indexOf(y.a[0]);return ((ix<0?99:ix)-(iy<0?99:iy))||(x.i-y.i);}).map(x=>x.a);
+  SEC_ORDEN=rs.length?rs.concat(SEC_BASE.filter(n=>rs.indexOf(n)<0)):SEC_BASE.slice();
+}
+function guardarOrdenListas(){
+  if(!dispositivo)return;
+  setDoc(doc(db,'pedido_orden',LOCAL_CODE[dispositivo.local]),{areas:AREAS.map(a=>a[0]),secciones:SEC_ORDEN,actualizado:serverTimestamp()},{merge:true}).catch(e=>{console.error(e);showToast('❌ No se pudo guardar el orden');});
+}
+function moverArea(c,dir){
+  const i=AREAS.findIndex(a=>a[0]===c),j=i+dir;
+  if(i<0||j<0||j>=AREAS.length){showToast(dir<0?'Ya está primera':'Ya está última');return;}
+  const t=AREAS[i];AREAS[i]=AREAS[j];AREAS[j]=t;vib(15);renderPedido();guardarOrdenListas();
+}
+function moverSec(nombre,dir){
+  const lista=CAT.filter(p=>enArea(p,pedCat)),vis=[...new Set(lista.map(p=>p.seccion||''))].filter(Boolean).sort((a,b)=>{const x=SEC_ORDEN.indexOf(a),y=SEC_ORDEN.indexOf(b);return (x<0?99:x)-(y<0?99:y);});
+  const i=vis.indexOf(nombre),j=i+dir;
+  if(i<0||j<0||j>=vis.length){showToast(dir<0?'Ya está primera':'Ya está última');return;}
+  const orden=[...new Set(vis.concat(SEC_ORDEN).concat(CAT.map(p=>p.seccion||'').filter(Boolean)))];
+  const g=orden.filter(n=>SEC_ORDEN.indexOf(n)>=0||vis.indexOf(n)>=0||true);
+  const base=SEC_ORDEN.concat(g.filter(n=>SEC_ORDEN.indexOf(n)<0));
+  const sin=base.filter(n=>n!==nombre),vecino=vis[j],k=sin.indexOf(vecino);
+  sin.splice(dir<0?k:k+1,0,nombre);SEC_ORDEN=sin;vib(15);renderPedido();guardarOrdenListas();
+}
 async function prodMover(id,dir){
   const p=CAT.find(x=>x.id===id);if(!p)return;
   const g=CAT.filter(x=>enArea(x,p.categoria)&&x.seccion===p.seccion),i=g.findIndex(x=>x.id===id),j=i+dir;
@@ -2453,7 +2481,7 @@ function iniciarCfg(){
   $('ped-nuevo').addEventListener('click',()=>{vib();prodNuevoAbrir(pedCat||'cocina');});
   $('ped-orden').addEventListener('click',()=>{
     if(pedOrd){pedOrd=false;ultMov=null;renderPedido();return;}
-    openKeypad('Código del manager',0,v=>{if(v!==CODIGO_MANAGER){showToast('❌ Código incorrecto');vib([60,40,60]);return;}pedOrd=true;renderPedido();showToast('↕ Usa ▲ ▼ para ordenar. Se guarda solo.');});
+    openKeypad('Código del manager',0,v=>{if(v!==CODIGO_MANAGER){showToast('❌ Código incorrecto');vib([60,40,60]);return;}pedOrd=true;renderPedido();showToast('↕ Usa ▲ ▼ para ordenar productos, secciones y listas. Se guarda solo.');});
   });
   $('np-cancel').addEventListener('click',()=>$('np').classList.remove('open'));
   $('np-ok').addEventListener('click',prodNuevoGuardar);
@@ -2479,7 +2507,8 @@ let pedItems={},pedCat='cocina',pedQ='',pedMios=[];
 const draftKey=()=>`ec_pedido_borrador_${dispositivo.local}`;
 function cargarBorrador(){try{pedItems=JSON.parse(lsGet(draftKey(),'{}'))||{};}catch(e){pedItems={};}}
 function guardarBorrador(){lsSet(draftKey(),JSON.stringify(pedItems));}
-const SEC_ORDEN=['Mercado','Facility','Bodega','Grande'];
+const SEC_BASE=['Mercado','Facility','Bodega','Grande'];
+let SEC_ORDEN=SEC_BASE.slice();
 function thumbFila(p){
   if(p.foto)return `<div class="pr-th"><img src="${esc(p.foto)}" alt=""></div>`;
   const h=hueDe(p.id);return `<div class="pr-th" style="background:hsl(${h} 40% 86%);color:hsl(${h} 40% 28%)">${esc(iniciales(p.nombre))}</div>`;
@@ -2489,7 +2518,8 @@ function renderPedido(){
   $('pl-local').textContent=dispositivo.local.toUpperCase();
   $('ped-cats').innerHTML=AREAS.map(([c,l])=>{const em=l.split(' ')[0],nom=l.slice(em.length+1);
     const tot=CAT.filter(p=>enArea(p,c)).length,sel=CAT.filter(p=>enArea(p,c)&&pedItems[p.id]!==undefined).length;
-    return `<button class="parea ${c===pedCat&&!sinAc(pedQ)?'act':''}" data-c="${esc(c)}"><span class="pa-ic">${em}</span><span class="pa-tx"><b>${esc(nom)}</b><small>${tot?(sel?sel+' por pedir':'Nada por pedir')+' · '+tot+' productos':'Sin productos'}</small></span></button>`;}).join('');
+    const bt=`<button class="parea ${c===pedCat&&!sinAc(pedQ)?'act':''}" data-c="${esc(c)}"><span class="pa-ic">${em}</span><span class="pa-tx"><b>${esc(nom)}</b><small>${tot?(sel?sel+' por pedir':'Nada por pedir')+' · '+tot+' productos':'Sin productos'}</small></span></button>`;
+    return pedOrd?`<div class="parea-row">${bt}<span class="pr-mv"><button data-ma="${esc(c)}" data-d="-1" aria-label="Subir lista">▲</button><button data-ma="${esc(c)}" data-d="1" aria-label="Bajar lista">▼</button></span></div>`:bt;}).join('');
   const q=sinAc(pedQ);
   const lista=q?CAT.filter(p=>sinAc(p.nombre).includes(q)):CAT.filter(p=>enArea(p,pedCat));   // si buscas, busca en todas las áreas
   const aInfo=AREAS.find(a=>a[0]===pedCat)||AREAS[0];const nSel=lista.filter(p=>pedItems[p.id]!==undefined).length;
@@ -2497,7 +2527,7 @@ function renderPedido(){
   $('pr-sub').textContent=nSel?`${nSel} por pedir`:'Nada por pedir';
   $('ped-vacio').style.display=lista.length?'none':'block';
   const secs=[...new Set(lista.map(p=>p.seccion||''))].sort((a,b)=>{const x=SEC_ORDEN.indexOf(a),y=SEC_ORDEN.indexOf(b);return (x<0?99:x)-(y<0?99:y);});
-  $('ped-grid').innerHTML=secs.map(sc=>`${sc?`<div class="sec-h">🗂 ${esc(sc)}</div>`:''}<div class="plist">`+lista.filter(p=>(p.seccion||'')===sc).map(p=>{
+  $('ped-grid').innerHTML=secs.map(sc=>`${sc?(pedOrd?`<div class="sec-h sec-ord"><span>🗂 ${esc(sc)}</span><span class="pr-mv"><button data-ms="${esc(sc)}" data-d="-1" aria-label="Subir sección">▲</button><button data-ms="${esc(sc)}" data-d="1" aria-label="Bajar sección">▼</button></span></div>`:`<div class="sec-h">🗂 ${esc(sc)}</div>`):''}<div class="plist">`+lista.filter(p=>(p.seccion||'')===sc).map(p=>{
     const c=pedItems[p.id],sel=c!==undefined;
     return `<div class="prow ${sel?'sel':'tachado'}${p.id===ultMov?' mov':''}" data-id="${esc(p.id)}">${thumbFila(p)}
       <div class="pr-main"><span class="pr-n">${esc(p.nombre)}</span> <span class="pr-d">${sel?`(<b>${fmtN(c)}</b>${p.resto?' '+esc(p.resto):''})`:`(${esc(descDe(p))})`}</span></div>
@@ -2812,8 +2842,8 @@ function iniciarUI(){
   $('inv-cats').addEventListener('click',e=>{const b=e.target.closest('.qchip');if(b){invCat=b.dataset.c;vib();invCargar();}});
   $('inv-search').addEventListener('input',e=>{invQ=e.target.value;renderInv();});
   $('inv-save').addEventListener('click',invGuardar);
-  $('ped-grid').addEventListener('click',e=>{const mv=e.target.closest('[data-mv]');if(mv){prodMover(mv.dataset.mv,+mv.dataset.d);return;}if(pedOrd)return;const ed=e.target.closest('[data-ed]');if(ed){vib();const id=ed.dataset.ed;if(pedItems[id]===undefined){pedItems[id]=(CAT.find(x=>x.id===id)||{}).cant||1;guardarBorrador();renderPedido();}abrirQty(id);return;}const b=e.target.closest('.prow');if(b)pedTap(b.dataset.id);});
-  $('ped-cats').addEventListener('click',e=>{const b=e.target.closest('.parea');if(b){pedCat=b.dataset.c;pedQ='';$('ped-search').value='';vib();renderPedido();}});
+  $('ped-grid').addEventListener('click',e=>{const ms=e.target.closest('[data-ms]');if(ms){moverSec(ms.dataset.ms,+ms.dataset.d);return;}const mv=e.target.closest('[data-mv]');if(mv){prodMover(mv.dataset.mv,+mv.dataset.d);return;}if(pedOrd)return;const ed=e.target.closest('[data-ed]');if(ed){vib();const id=ed.dataset.ed;if(pedItems[id]===undefined){pedItems[id]=(CAT.find(x=>x.id===id)||{}).cant||1;guardarBorrador();renderPedido();}abrirQty(id);return;}const b=e.target.closest('.prow');if(b)pedTap(b.dataset.id);});
+  $('ped-cats').addEventListener('click',e=>{const ma=e.target.closest('[data-ma]');if(ma){moverArea(ma.dataset.ma,+ma.dataset.d);return;}const b=e.target.closest('.parea');if(b){pedCat=b.dataset.c;pedQ='';$('ped-search').value='';vib();renderPedido();}});
   $('ped-search').addEventListener('input',e=>{pedQ=e.target.value;renderPedido();});
   $('ped-send').addEventListener('click',pedEnviar);
   $('btn-rev').addEventListener('click',()=>{vib();ovAbrir('rev');});
